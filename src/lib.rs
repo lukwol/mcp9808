@@ -10,42 +10,19 @@ impl From<Address> for u8 {
     }
 }
 
-trait AddressPin {
-    fn bit(&self) -> u8;
+#[derive(Debug, PartialEq, Clone, Copy)]
+#[repr(u8)]
+pub enum AddressPin {
+    A0 = 1,
+    A1 = 1 << 1,
+    A2 = 1 << 2,
 }
 
-#[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
-struct A0Pin;
-
-impl AddressPin for A0Pin {
-    fn bit(&self) -> u8 {
-        1
-    }
-}
-
-#[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
-struct A1Pin;
-
-impl AddressPin for A1Pin {
-    fn bit(&self) -> u8 {
-        1 << 1
-    }
-}
-
-#[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
-struct A2Pin;
-
-impl AddressPin for A2Pin {
-    fn bit(&self) -> u8 {
-        1 << 2
-    }
-}
-
-#[derive(Debug)]
+#[derive(Debug, Default)]
 struct PinConfiguration {
-    a0_pin: Option<A0Pin>,
-    a1_pin: Option<A1Pin>,
-    a2_pin: Option<A2Pin>,
+    a0_pin_enabled: bool,
+    a1_pin_enabled: bool,
+    a2_pin_enabled: bool,
 }
 
 #[derive(Debug)]
@@ -58,9 +35,15 @@ impl PinConfigurableAddress {
     fn configured_address(&self) -> Address {
         let mut address_ptr: u8 = self.default_address.into();
         if let Some(config) = &self.configuration {
-            address_ptr |= config.a0_pin.map_or(0x0, |p| p.bit());
-            address_ptr |= config.a1_pin.map_or(0x0, |p| p.bit());
-            address_ptr |= config.a2_pin.map_or(0x0, |p| p.bit());
+            if config.a0_pin_enabled {
+                address_ptr |= AddressPin::A0 as u8;
+            }
+            if config.a1_pin_enabled {
+                address_ptr |= AddressPin::A1 as u8;
+            }
+            if config.a2_pin_enabled {
+                address_ptr |= AddressPin::A2 as u8;
+            }
         }
         Address(address_ptr)
     }
@@ -70,9 +53,13 @@ trait Register {
     fn address(&self) -> Address;
 }
 
-trait WriteRegister: Register {}
+trait WriteRegister: Register {
+    type WriteValue;
+}
 
-trait WriteReadRegister: Register {}
+trait ReadRegister: Register {
+    type ReadValue;
+}
 
 #[derive(Debug)]
 struct TemperatureRegister;
@@ -83,6 +70,6 @@ impl Register for TemperatureRegister {
     }
 }
 
-impl WriteRegister for TemperatureRegister {}
+// impl WriteRegister for TemperatureRegister {}
 
-impl WriteReadRegister for TemperatureRegister {}
+// impl ReadRegister for TemperatureRegister {}
