@@ -59,9 +59,31 @@ trait Register {
 
 trait WriteRegister: Register {}
 
-trait ReadRegister: Register {
-    fn read_value(&self) -> [u8; 2];
+trait ReadRegister<T>: Register where T: From<[u8; 2]>{}
+
+#[derive(Debug, PartialEq, PartialOrd, Copy, Clone)]
+struct Millicelsius(i16);
+
+impl From<[u8; 2]> for Millicelsius {
+    fn from(_: [u8; 2]) -> Self {
+        Millicelsius(0)
+    }
 }
+
+#[derive(Debug)]
+struct TemperatureRegister;
+
+impl Register for TemperatureRegister {
+    fn len(&self) -> usize {
+        2
+    }
+
+    fn address(&self) -> u8 {
+        0b0000
+    }
+}
+
+impl ReadRegister<Millicelsius> for TemperatureRegister {}
 
 #[derive(Debug)]
 enum Error<E> {
@@ -93,17 +115,20 @@ impl<I2C> MCP9808<I2C> {
         Ok(())
     }
 
-    fn read_register<E>(&mut self, register: impl ReadRegister) -> Result<[u8; 2], E>
+    fn read_register<T, E>(&mut self, register: impl ReadRegister<T>) -> Result<T, E>
     where
-        I2C: i2c::WriteRead<Error = E>
+        I2C: i2c::WriteRead<Error = E>,
+        T: From<[u8; 2]>
     {
         let mut buff = [0; 2];
-        for (i, item) in register.read_value().iter().enumerate() {
-            buff[i + 1] = *item;
-        }
         self.i2c
             .write_read(self.address.0, &[register.address()], &mut buff[0..register.len()])?;
 
-        Ok(buff)
+        Ok(T::from(buff))
+    }
+
+    fn foo(&mut self) where I2C: embedded_hal::blocking::i2c::WriteRead {
+        let reg = TemperatureRegister;
+        self.read_register(reg);
     }
 }
