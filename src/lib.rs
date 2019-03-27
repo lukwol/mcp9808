@@ -1,6 +1,9 @@
 #![no_std]
 #![allow(dead_code)]
 
+use crate::hal::blocking::i2c;
+use embedded_hal as hal;
+
 #[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
 struct Address(u8);
 
@@ -12,7 +15,7 @@ impl From<Address> for u8 {
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 #[repr(u8)]
-pub enum AddressPin {
+enum AddressPin {
     A0 = 1,
     A1 = 1 << 1,
     A2 = 1 << 2,
@@ -50,26 +53,60 @@ impl PinConfigurableAddress {
 }
 
 trait Register {
-    fn address(&self) -> Address;
+    fn len(&self) -> u8;
+    fn address(&self) -> u8;
 }
 
 trait WriteRegister: Register {
-    type WriteValue;
+    fn write_value(&self) -> [u8; 2];
 }
 
 trait ReadRegister: Register {
-    type ReadValue;
+    fn read_value(&self) -> [u8; 2];
 }
 
 #[derive(Debug)]
-struct TemperatureRegister;
-
-impl Register for TemperatureRegister {
-    fn address(&self) -> Address {
-        Address(0x5)
-    }
+enum Error<E> {
+    I2C(E),
 }
 
-// impl WriteRegister for TemperatureRegister {}
+#[derive(Debug)]
+struct MCP9808<I2C> {
+    address: Address,
+    i2c: I2C,
+}
 
-// impl ReadRegister for TemperatureRegister {}
+impl<I2C> MCP9808<I2C> {
+    fn new(i2c: I2C, address: Address) -> Self {
+        MCP9808 { address, i2c }
+    }
+
+    fn write_register<E>(&mut self, register: impl WriteRegister) -> Result<(), E>
+    where
+        I2C: i2c::Write<Error = E>,
+    {
+        let mut buff = [0; 3];
+        buff[0] = register.address();
+        for (i, item) in register.write_value().iter().enumerate() {
+            buff[i + 1] = *item;
+        }
+        self.i2c.write(self.address.0, &buff)?;
+
+        Ok(())
+    }
+
+    fn read_register<T, E>(&mut self, register: impl ReadRegister) -> Result<T, E>
+    where
+        I2C: i2c::WriteRead<Error = E>,
+        T: From<u16>
+    {
+        let mut buff = [0; 2];
+        for (i, item) in register.read_value().iter().enumerate() {
+            buff[i + 1] = *item;
+        }
+        self.i2c
+            .write_read(self.address.0, &[register.address()], &mut buff)?;
+
+        Ok(T::from(0))
+    }
+}
