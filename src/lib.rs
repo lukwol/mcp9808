@@ -53,13 +53,11 @@ impl PinConfigurableAddress {
 }
 
 trait Register {
-    fn len(&self) -> u8;
+    fn len(&self) -> usize;
     fn address(&self) -> u8;
 }
 
-trait WriteRegister: Register {
-    fn write_value(&self) -> [u8; 2];
-}
+trait WriteRegister: Register {}
 
 trait ReadRegister: Register {
     fn read_value(&self) -> [u8; 2];
@@ -81,32 +79,31 @@ impl<I2C> MCP9808<I2C> {
         MCP9808 { address, i2c }
     }
 
-    fn write_register<E>(&mut self, register: impl WriteRegister) -> Result<(), E>
+    fn write_register<E>(&mut self, register: impl WriteRegister, value: [u8; 2]) -> Result<(), E>
     where
         I2C: i2c::Write<Error = E>,
     {
         let mut buff = [0; 3];
         buff[0] = register.address();
-        for (i, item) in register.write_value().iter().enumerate() {
+        for (i, item) in value.iter().enumerate() {
             buff[i + 1] = *item;
         }
-        self.i2c.write(self.address.0, &buff)?;
+        self.i2c.write(self.address.0, &buff[0..register.len()])?;
 
         Ok(())
     }
 
-    fn read_register<T, E>(&mut self, register: impl ReadRegister) -> Result<T, E>
+    fn read_register<E>(&mut self, register: impl ReadRegister) -> Result<[u8; 2], E>
     where
-        I2C: i2c::WriteRead<Error = E>,
-        T: From<u16>
+        I2C: i2c::WriteRead<Error = E>
     {
         let mut buff = [0; 2];
         for (i, item) in register.read_value().iter().enumerate() {
             buff[i + 1] = *item;
         }
         self.i2c
-            .write_read(self.address.0, &[register.address()], &mut buff)?;
+            .write_read(self.address.0, &[register.address()], &mut buff[0..register.len()])?;
 
-        Ok(T::from(0))
+        Ok(buff)
     }
 }
