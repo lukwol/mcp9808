@@ -56,30 +56,6 @@ trait Register {
     fn address(&self) -> u8;
 }
 
-trait Write1BitRegister<T>: Register
-where
-    T: Into<[u8; 1]>,
-{
-}
-
-trait Write2BitRegister<T>: Register
-where
-    T: Into<[u8; 2]>,
-{
-}
-
-trait Read1BitRegister<T>: Register
-where
-    T: From<[u8; 1]>,
-{
-}
-
-trait Read2BitRegister<T>: Register
-where
-    T: From<[u8; 2]>,
-{
-}
-
 #[derive(Debug, PartialEq, PartialOrd, Copy, Clone)]
 struct Millicelsius(i16);
 
@@ -98,15 +74,15 @@ impl Into<[u8; 2]> for Millicelsius {
 #[derive(Debug, PartialEq, PartialOrd, Copy, Clone)]
 struct Celsius(i16);
 
-impl From<[u8; 1]> for Celsius {
-    fn from(_: [u8; 1]) -> Self {
+impl From<[u8; 2]> for Celsius {
+    fn from(_: [u8; 2]) -> Self {
         Celsius(0)
     }
 }
 
-impl Into<[u8; 1]> for Celsius {
-    fn into(self) -> [u8; 1] {
-        [0]
+impl Into<[u8; 2]> for Celsius {
+    fn into(self) -> [u8; 2] {
+        [0, 0]
     }
 }
 
@@ -119,10 +95,34 @@ impl Register for TemperatureRegister {
     }
 }
 
-impl Read1BitRegister<Celsius> for TemperatureRegister {}
 impl Read2BitRegister<Millicelsius> for TemperatureRegister {}
-impl Write1BitRegister<Celsius> for TemperatureRegister {}
-impl Write2BitRegister<Millicelsius> for TemperatureRegister {}
+impl Read2BitRegister<Celsius> for TemperatureRegister {}
+
+#[derive(Debug, PartialEq, PartialOrd, Copy, Clone)]
+struct Resolution(u8);
+
+impl From<[u8; 1]> for Resolution {
+    fn from(_: [u8; 1]) -> Self {
+        Resolution(0)
+    }
+}
+
+impl Into<[u8; 1]> for Resolution {
+    fn into(self) -> [u8; 1] {
+        [0]
+    }
+}
+
+#[derive(Debug)]
+struct ResolutionRegister;
+
+impl Register for ResolutionRegister {
+    fn address(&self) -> u8 {
+        0b0001
+    }
+}
+
+impl Write1BitRegister<Resolution> for ResolutionRegister {}
 
 #[derive(Debug)]
 enum Error<E> {
@@ -140,6 +140,30 @@ impl<I2C> MCP9808<I2C> {
         MCP9808 { address, i2c }
     }
 
+    fn read_temperature_millicelsius(&mut self) -> Millicelsius
+    where
+        I2C: i2c::WriteRead,
+    {
+        let tr = TemperatureRegister;
+        self.read_2_bit_register(&tr).ok().unwrap()
+    }
+
+    fn read_temperature_celsius(&mut self) -> Celsius
+    where
+        I2C: i2c::WriteRead,
+    {
+        let tr = TemperatureRegister;
+        self.read_2_bit_register(&tr).ok().unwrap()
+    }
+}
+
+trait Write1BitRegister<T>: Register
+where
+    T: Into<[u8; 1]>,
+{
+}
+
+impl<I2C> MCP9808<I2C> {
     fn write_1_bit_register<T, E>(
         &mut self,
         register: &impl Write1BitRegister<T>,
@@ -158,7 +182,15 @@ impl<I2C> MCP9808<I2C> {
 
         Ok(())
     }
+}
 
+trait Write2BitRegister<T>: Register
+where
+    T: Into<[u8; 2]>,
+{
+}
+
+impl<I2C> MCP9808<I2C> {
     fn write_2_bit_register<T, E>(
         &mut self,
         register: &impl Write2BitRegister<T>,
@@ -177,7 +209,15 @@ impl<I2C> MCP9808<I2C> {
 
         Ok(())
     }
+}
 
+trait Read1BitRegister<T>: Register
+where
+    T: From<[u8; 1]>,
+{
+}
+
+impl<I2C> MCP9808<I2C> {
     fn read_1_bit_register<T, E>(&mut self, register: &impl Read1BitRegister<T>) -> Result<T, E>
     where
         I2C: i2c::WriteRead<Error = E>,
@@ -188,7 +228,15 @@ impl<I2C> MCP9808<I2C> {
             .write_read(self.address.0, &[register.address()], &mut buff)?;
         Ok(T::from(buff))
     }
+}
 
+trait Read2BitRegister<T>: Register
+where
+    T: From<[u8; 2]>,
+{
+}
+
+impl<I2C> MCP9808<I2C> {
     fn read_2_bit_register<T, E>(&mut self, register: &impl Read2BitRegister<T>) -> Result<T, E>
     where
         I2C: i2c::WriteRead<Error = E>,
