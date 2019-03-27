@@ -1,7 +1,7 @@
 #![no_std]
-// #![allow(dead_code)]
+#![allow(dead_code)]
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
 struct Address(u8);
 
 impl From<Address> for u8 {
@@ -11,17 +11,35 @@ impl From<Address> for u8 {
 }
 
 trait AddressPin {
-    fn bit() -> bool;
+    fn bit(&self) -> u8;
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
 struct A0Pin;
 
-#[derive(Debug)]
+impl AddressPin for A0Pin {
+    fn bit(&self) -> u8 {
+        1
+    }
+}
+
+#[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
 struct A1Pin;
 
-#[derive(Debug)]
+impl AddressPin for A1Pin {
+    fn bit(&self) -> u8 {
+        1 << 1
+    }
+}
+
+#[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
 struct A2Pin;
+
+impl AddressPin for A2Pin {
+    fn bit(&self) -> u8 {
+        1 << 2
+    }
+}
 
 #[derive(Debug)]
 struct PinConfiguration {
@@ -32,8 +50,20 @@ struct PinConfiguration {
 
 #[derive(Debug)]
 struct PinConfigurableAddress {
-    address: Address,
-    configuration: PinConfiguration,
+    default_address: Address,
+    configuration: Option<PinConfiguration>,
+}
+
+impl PinConfigurableAddress {
+    fn configured_address(&self) -> Address {
+        let mut address_ptr: u8 = self.default_address.into();
+        if let Some(config) = &self.configuration {
+            address_ptr |= config.a0_pin.map_or(0x0, |p| p.bit());
+            address_ptr |= config.a1_pin.map_or(0x0, |p| p.bit());
+            address_ptr |= config.a2_pin.map_or(0x0, |p| p.bit());
+        }
+        Address(address_ptr)
+    }
 }
 
 trait Register {
