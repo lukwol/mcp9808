@@ -4,323 +4,105 @@
 use crate::hal::blocking::i2c;
 use embedded_hal as hal;
 
-#[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
-struct Address(u8);
-
-impl From<Address> for u8 {
-    fn from(address: Address) -> Self {
-        address.0
-    }
-}
-
-#[derive(Debug, PartialEq, Clone, Copy)]
-#[repr(u8)]
-enum AddressPin {
-    A0 = 1,
-    A1 = 1 << 1,
-    A2 = 1 << 2,
-}
-
-#[derive(Debug, Default)]
-struct PinConfiguration {
-    a0_pin_enabled: bool,
-    a1_pin_enabled: bool,
-    a2_pin_enabled: bool,
-}
-
-#[derive(Debug)]
-struct PinConfigurableAddress {
-    default_address: Address,
-    configuration: Option<PinConfiguration>,
-}
-
-impl PinConfigurableAddress {
-    fn configured_address(&self) -> Address {
-        let mut address_ptr: u8 = self.default_address.into();
-        if let Some(config) = &self.configuration {
-            if config.a0_pin_enabled {
-                address_ptr |= AddressPin::A0 as u8;
-            }
-            if config.a1_pin_enabled {
-                address_ptr |= AddressPin::A1 as u8;
-            }
-            if config.a2_pin_enabled {
-                address_ptr |= AddressPin::A2 as u8;
-            }
-        }
-        Address(address_ptr)
-    }
-}
-
-trait Register {
-    fn address(&self) -> u8;
-}
-
-#[derive(Debug, PartialEq, PartialOrd, Copy, Clone)]
-struct Millicelsius(i16);
-
-impl From<[u8; 2]> for Millicelsius {
-    fn from(_: [u8; 2]) -> Self {
-        Millicelsius(0)
-    }
-}
-
-impl Into<[u8; 2]> for Millicelsius {
-    fn into(self) -> [u8; 2] {
-        [0, 0]
-    }
-}
-
-#[derive(Debug, PartialEq, PartialOrd, Copy, Clone)]
-struct Celsius(i16);
-
-impl From<[u8; 2]> for Celsius {
-    fn from(_: [u8; 2]) -> Self {
-        Celsius(0)
-    }
-}
-
-impl Into<[u8; 2]> for Celsius {
-    fn into(self) -> [u8; 2] {
-        [0, 0]
-    }
-}
-
-#[derive(Debug)]
-struct TemperatureRegister;
-
-impl Register for TemperatureRegister {
-    fn address(&self) -> u8 {
-        0b0000
-    }
-}
-
-impl Read2BitRegister<Millicelsius> for TemperatureRegister {}
-
-impl Read2BitRegister<Celsius> for TemperatureRegister {}
-
-#[derive(Debug, PartialEq, PartialOrd, Copy, Clone)]
-struct Resolution(u8);
-
-impl From<[u8; 1]> for Resolution {
-    fn from(_: [u8; 1]) -> Self {
-        Resolution(0)
-    }
-}
-
-impl Into<[u8; 1]> for Resolution {
-    fn into(self) -> [u8; 1] {
-        [0]
-    }
-}
-
-#[derive(Debug)]
-struct ResolutionRegister;
-
-impl Register for ResolutionRegister {
-    fn address(&self) -> u8 {
-        0b0001
-    }
-}
-
-impl Write1BitRegister<Resolution> for ResolutionRegister {}
-
 #[derive(Debug)]
 enum Error<E> {
     I2C(E),
 }
 
 #[derive(Debug)]
-struct MCP9808<I2C> {
+struct MCP9808<I2C, Address>
+where
+    Address: Into<u8>,
+{
     address: Address,
     i2c: I2C,
 }
 
-impl<I2C> MCP9808<I2C> {
-    fn new(i2c: I2C, address: Address) -> Self {
-        MCP9808 { address, i2c }
-    }
-
-    fn read_temperature_millicelsius(&mut self) -> Millicelsius
-    where
-        I2C: i2c::WriteRead,
-    {
-        let tr = TemperatureRegister;
-        self.read_2_bit_register(&tr).ok().unwrap()
-    }
-
-    fn read_temperature_celsius(&mut self) -> Celsius
-    where
-        I2C: i2c::WriteRead,
-    {
-        let tr = TemperatureRegister;
-        self.read_2_bit_register(&tr).ok().unwrap()
-    }
-}
-
-trait Write1BitRegister<T>: Register
+trait Register<Address>
 where
-    T: Into<[u8; 1]>,
+    Address: Into<u8>,
 {
-}
-
-impl<I2C> MCP9808<I2C> {
-    fn write_1_bit_register<T, E>(
-        &mut self,
-        register: &impl Write1BitRegister<T>,
-        value: T,
-    ) -> Result<(), E>
-    where
-        I2C: i2c::Write<Error = E>,
-        T: Into<[u8; 1]>,
-    {
-        let mut buff = [0; 2];
-        buff[0] = register.address();
-        for (i, item) in value.into().iter().enumerate() {
-            buff[i + 1] = *item;
-        }
-        self.i2c.write(self.address.0, &buff)?;
-
-        Ok(())
-    }
-}
-
-trait Write2BitRegister<T>: Register
-where
-    T: Into<[u8; 2]>,
-{
-}
-
-impl<I2C> MCP9808<I2C> {
-    fn write_2_bit_register<T, E>(
-        &mut self,
-        register: &impl Write2BitRegister<T>,
-        value: T,
-    ) -> Result<(), E>
-    where
-        I2C: i2c::Write<Error = E>,
-        T: Into<[u8; 2]>,
-    {
-        let mut buff = [0; 3];
-        buff[0] = register.address();
-        for (i, item) in value.into().iter().enumerate() {
-            buff[i + 1] = *item;
-        }
-        self.i2c.write(self.address.0, &buff)?;
-
-        Ok(())
-    }
-}
-
-trait Read1BitRegister<T>: Register
-where
-    T: From<[u8; 1]>,
-{
-}
-
-impl<I2C> MCP9808<I2C> {
-    fn read_1_bit_register<T, E>(&mut self, register: &impl Read1BitRegister<T>) -> Result<T, E>
-    where
-        I2C: i2c::WriteRead<Error = E>,
-        T: From<[u8; 1]>,
-    {
-        let mut buff = [0; 1];
-        self.i2c
-            .write_read(self.address.0, &[register.address()], &mut buff)?;
-        Ok(T::from(buff))
-    }
-}
-
-trait Read2BitRegister<T>: Register
-where
-    T: From<[u8; 2]>,
-{
-}
-
-impl<I2C> MCP9808<I2C> {
-    fn read_2_bit_register<T, E>(&mut self, register: &impl Read2BitRegister<T>) -> Result<T, E>
-    where
-        I2C: i2c::WriteRead<Error = E>,
-        T: From<[u8; 2]>,
-    {
-        let mut buff = [0; 2];
-        self.i2c
-            .write_read(self.address.0, &[register.address()], &mut buff)?;
-        Ok(T::from(buff))
-    }
-}
-
-trait I2cInterface<I2C> {
-    fn i2c(&mut self) -> I2C;
     fn address(&self) -> Address;
 }
 
-trait Read1BReg<T>: Register
+trait Read1BReg<Value>: Register
 where
-    T: From<[u8; 1]>,
+    Value: From<[u8; 1]>,
 {
 }
 
-trait Write1BReg<T>: Register
+trait Write1BReg<Value>: Register
 where
-    T: Into<[u8; 1]>,
+    Value: Into<[u8; 1]>,
 {
 }
 
-trait ReadWrite1BReg<T>: Read1BReg<T> + Write1BReg<T>
+trait ReadWrite1BReg<Value>: Read1BReg<Value> + Write1BReg<Value>
 where
-    T: From<[u8; 1]>,
-    T: Into<[u8; 1]>,
+    Value: From<[u8; 1]>,
+    Value: Into<[u8; 1]>,
 {
 }
 
 trait I2cRead1BReg<I2C> {
-    fn read_1_bit_register<T, E>(&mut self, register: &impl Read1BReg<T>) -> Result<T, E>
+    fn read_1_byte_register<Value, Err>(
+        &mut self,
+        register: &impl Read1BReg<Value>,
+    ) -> Result<Value, Err>
     where
-        I2C: i2c::WriteRead<Error = E>,
-        T: From<[u8; 1]>;
+        I2C: i2c::WriteRead<Error = Err>,
+        Value: From<[u8; 1]>;
 }
 
-impl<I2C> I2cRead1BReg<I2C> for I2cInterface<I2C> {
-    fn read_1_bit_register<T, E>(&mut self, register: &impl Read1BReg<T>) -> Result<T, E>
+impl<I2C, Address> I2cRead1BReg<I2C> for MCP9808<I2C, Address>
+where
+    Address: Into<u8> + Clone + Copy,
+{
+    fn read_1_byte_register<Value, Err>(
+        &mut self,
+        register: &impl Read1BReg<Value>,
+    ) -> Result<Value, Err>
     where
-        I2C: i2c::WriteRead<Error = E>,
-        T: From<[u8; 1]>,
+        I2C: i2c::WriteRead<Error = Err>,
+        Value: From<[u8; 1]>,
     {
         let mut buff = [0; 1];
-        self.i2c()
-            .write_read(self.address().0, &[register.address()], &mut buff)?;
-        Ok(T::from(buff))
+        self.i2c
+            .write_read(self.address.into(), &[register.address()], &mut buff)?;
+        Ok(Value::from(buff))
     }
 }
 
 trait I2cWrite1BReg<I2C> {
-    fn write_1_bit_register<T, E>(
+    fn write_1_byte_register<Value, Err>(
         &mut self,
-        register: &impl Write1BReg<T>,
-        value: T,
-    ) -> Result<(), E>
+        register: &impl Write1BReg<Value>,
+        value: Value,
+    ) -> Result<(), Err>
     where
-        I2C: i2c::Write<Error = E>,
-        T: Into<[u8; 1]>;
+        I2C: i2c::Write<Error = Err>,
+        Value: Into<[u8; 1]>;
 }
 
-impl<I2C> I2cWrite1BReg<I2C> for I2cInterface<I2C> {
-    fn write_1_bit_register<T, E>(
+impl<I2C, Address> I2cWrite1BReg<I2C> for MCP9808<I2C, Address>
+where
+    Address: Into<u8> + Clone + Copy,
+{
+    fn write_1_byte_register<Value, Err>(
         &mut self,
-        register: &impl Write1BReg<T>,
-        value: T,
-    ) -> Result<(), E>
+        register: &impl Write1BReg<Value>,
+        value: Value,
+    ) -> Result<(), Err>
     where
-        I2C: i2c::Write<Error = E>,
-        T: Into<[u8; 1]>,
+        I2C: i2c::Write<Error = Err>,
+        Value: Into<[u8; 1]>,
     {
         let mut buff = [0; 2];
         buff[0] = register.address();
         for (i, item) in value.into().iter().enumerate() {
             buff[i + 1] = *item;
         }
-        self.i2c().write(self.address().0, &buff)?;
+        self.i2c.write(self.address.into(), &buff)?;
         Ok(())
     }
 }
