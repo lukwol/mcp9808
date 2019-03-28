@@ -24,6 +24,21 @@ struct MCP9808<I2C> {
     i2c: I2C,
 }
 
+trait I2cInterface<I2C> {
+    fn address(&self) -> Address;
+    fn i2c(&mut self) -> &mut I2C;
+}
+
+impl<I2C> I2cInterface<I2C> for MCP9808<I2C> {
+    fn address(&self) -> Address {
+        self.address
+    }
+
+    fn i2c(&mut self) -> &mut I2C {
+        &mut self.i2c
+    }
+}
+
 trait Register {
     fn address(&self) -> Address;
 }
@@ -46,7 +61,7 @@ trait I2cRead1BReg<I2C> {
         Value: From<[u8; 1]>;
 }
 
-impl<I2C> I2cRead1BReg<I2C> for MCP9808<I2C> {
+impl<I2C> I2cRead1BReg<I2C> for I2cInterface<I2C> {
     fn read_1_byte_register<Value, Err>(
         &mut self,
         register: &impl Read1BReg<Value>,
@@ -56,8 +71,9 @@ impl<I2C> I2cRead1BReg<I2C> for MCP9808<I2C> {
         Value: From<[u8; 1]>,
     {
         let mut buff = [0; 1];
-        self.i2c
-            .write_read(self.address.into(), &[register.address().into()], &mut buff)?;
+        let address_ptr = self.address().into();
+        self.i2c()
+            .write_read(address_ptr, &[register.address().into()], &mut buff)?;
         Ok(Value::from(buff))
     }
 }
@@ -96,7 +112,8 @@ impl<I2C> I2cWrite1BReg<I2C> for MCP9808<I2C> {
         for (i, item) in value.into().iter().enumerate() {
             payload[i + 1] = *item;
         }
-        self.i2c.write(self.address.into(), &payload)?;
+        let address_ptr = self.address().into();
+        self.i2c().write(address_ptr, &payload)?;
         Ok(())
     }
 }
