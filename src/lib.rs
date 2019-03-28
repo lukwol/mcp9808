@@ -19,10 +19,7 @@ impl From<Address> for u8 {
 }
 
 #[derive(Debug)]
-struct MCP9808<I2C>
-where
-    Address: Into<u8>,
-{
+struct MCP9808<I2C> {
     address: Address,
     i2c: I2C,
 }
