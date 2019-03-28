@@ -28,22 +28,11 @@ trait Register {
     fn address(&self) -> Address;
 }
 
+// I2cRead1BReg
+
 trait Read1BReg<Value>: Register
 where
     Value: From<[u8; 1]>,
-{
-}
-
-trait Write1BReg<Value>: Register
-where
-    Value: Into<[u8; 1]>,
-{
-}
-
-trait ReadWrite1BReg<Value>: Read1BReg<Value> + Write1BReg<Value>
-where
-    Value: From<[u8; 1]>,
-    Value: Into<[u8; 1]>,
 {
 }
 
@@ -71,6 +60,14 @@ impl<I2C> I2cRead1BReg<I2C> for MCP9808<I2C> {
             .write_read(self.address.into(), &[register.address().into()], &mut buff)?;
         Ok(Value::from(buff))
     }
+}
+
+// I2cWrite1BReg
+
+trait Write1BReg<Value>: Register
+where
+    Value: Into<[u8; 1]>,
+{
 }
 
 trait I2cWrite1BReg<I2C> {
@@ -102,6 +99,15 @@ impl<I2C> I2cWrite1BReg<I2C> for MCP9808<I2C> {
         self.i2c.write(self.address.into(), &payload)?;
         Ok(())
     }
+}
+
+//ReadWrite1BReg
+
+trait ReadWrite1BReg<Value>: Read1BReg<Value> + Write1BReg<Value>
+where
+    Value: From<[u8; 1]>,
+    Value: Into<[u8; 1]>,
+{
 }
 
 trait I2cReadWrite1BReg<I2C>: I2cRead1BReg<I2C> + I2cWrite1BReg<I2C> {}
