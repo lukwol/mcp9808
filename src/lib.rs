@@ -9,8 +9,17 @@ enum Error<E> {
     I2C(E),
 }
 
+#[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
+struct Address(u8);
+
+impl From<Address> for u8 {
+    fn from(address: Address) -> Self {
+        address.0
+    }
+}
+
 #[derive(Debug)]
-struct MCP9808<I2C, Address>
+struct MCP9808<I2C>
 where
     Address: Into<u8>,
 {
@@ -18,10 +27,7 @@ where
     i2c: I2C,
 }
 
-trait Register<Address>
-where
-    Address: Into<u8>,
-{
+trait Register {
     fn address(&self) -> Address;
 }
 
@@ -54,10 +60,7 @@ trait I2cRead1BReg<I2C> {
         Value: From<[u8; 1]>;
 }
 
-impl<I2C, Address> I2cRead1BReg<I2C> for MCP9808<I2C, Address>
-where
-    Address: Into<u8> + Clone + Copy,
-{
+impl<I2C> I2cRead1BReg<I2C> for MCP9808<I2C> {
     fn read_1_byte_register<Value, Err>(
         &mut self,
         register: &impl Read1BReg<Value>,
@@ -68,7 +71,7 @@ where
     {
         let mut buff = [0; 1];
         self.i2c
-            .write_read(self.address.into(), &[register.address()], &mut buff)?;
+            .write_read(self.address.into(), &[register.address().into()], &mut buff)?;
         Ok(Value::from(buff))
     }
 }
@@ -84,10 +87,7 @@ trait I2cWrite1BReg<I2C> {
         Value: Into<[u8; 1]>;
 }
 
-impl<I2C, Address> I2cWrite1BReg<I2C> for MCP9808<I2C, Address>
-where
-    Address: Into<u8> + Clone + Copy,
-{
+impl<I2C> I2cWrite1BReg<I2C> for MCP9808<I2C> {
     fn write_1_byte_register<Value, Err>(
         &mut self,
         register: &impl Write1BReg<Value>,
@@ -97,12 +97,12 @@ where
         I2C: i2c::Write<Error = Err>,
         Value: Into<[u8; 1]>,
     {
-        let mut buff = [0; 2];
-        buff[0] = register.address();
+        let mut payload = [0; 2];
+        payload[0] = register.address().into();
         for (i, item) in value.into().iter().enumerate() {
-            buff[i + 1] = *item;
+            payload[i + 1] = *item;
         }
-        self.i2c.write(self.address.into(), &buff)?;
+        self.i2c.write(self.address.into(), &payload)?;
         Ok(())
     }
 }
