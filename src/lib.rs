@@ -250,6 +250,11 @@ impl<I2C> MCP9808<I2C> {
     }
 }
 
+trait I2cInterface<I2C> {
+    fn i2c(&mut self) -> I2C;
+    fn address(&self) -> Address;
+}
+
 trait Read1BReg<T>: Register
 where
     T: From<[u8; 1]>,
@@ -276,6 +281,19 @@ trait I2cRead1BReg<I2C> {
         T: From<[u8; 1]>;
 }
 
+impl<I2C> I2cRead1BReg<I2C> for I2cInterface<I2C> {
+    fn read_1_bit_register<T, E>(&mut self, register: &impl Read1BReg<T>) -> Result<T, E>
+    where
+        I2C: i2c::WriteRead<Error = E>,
+        T: From<[u8; 1]>,
+    {
+        let mut buff = [0; 1];
+        self.i2c()
+            .write_read(self.address().0, &[register.address()], &mut buff)?;
+        Ok(T::from(buff))
+    }
+}
+
 trait I2cWrite1BReg<I2C> {
     fn write_1_bit_register<T, E>(
         &mut self,
@@ -285,6 +303,26 @@ trait I2cWrite1BReg<I2C> {
     where
         I2C: i2c::Write<Error = E>,
         T: Into<[u8; 1]>;
+}
+
+impl<I2C> I2cWrite1BReg<I2C> for I2cInterface<I2C> {
+    fn write_1_bit_register<T, E>(
+        &mut self,
+        register: &impl Write1BReg<T>,
+        value: T,
+    ) -> Result<(), E>
+    where
+        I2C: i2c::Write<Error = E>,
+        T: Into<[u8; 1]>,
+    {
+        let mut buff = [0; 2];
+        buff[0] = register.address();
+        for (i, item) in value.into().iter().enumerate() {
+            buff[i + 1] = *item;
+        }
+        self.i2c().write(self.address().0, &buff)?;
+        Ok(())
+    }
 }
 
 trait I2cReadWrite1BReg<I2C>: I2cRead1BReg<I2C> + I2cWrite1BReg<I2C> {}
