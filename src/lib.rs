@@ -250,18 +250,37 @@ impl<I2C> MCP9808<I2C> {
     }
 }
 
-trait I2c1BWOReg<I2C> {
+trait R1BReg<T>: Register
+where
+    T: From<[u8; 1]>,
+{
+}
+
+trait W1BReg<T>: Register
+where
+    T: Into<[u8; 1]>,
+{
+}
+
+trait RW1BReg<T>: R1BReg<T> + W1BReg<T>
+where
+    T: From<[u8; 1]>,
+    T: Into<[u8; 1]>,
+{
+}
+
+trait I2cR1BReg<I2C> {
     fn read_1_bit_register<T, E>(&mut self, register: &impl Read1BitRegister<T>) -> Result<T, E>
     where
         I2C: i2c::WriteRead<Error = E>,
         T: From<[u8; 1]>;
 }
 
-trait I2c1BROReg<I2C> {
+trait I2cW1BReg<I2C> {
     fn read_1_bit_register<T, E>(&mut self, register: &impl Read1BitRegister<T>) -> Result<T, E>
     where
         I2C: i2c::WriteRead<Error = E>,
         T: From<[u8; 1]>;
 }
 
-trait I2c1BRWReg<I2C>: I2c1BROReg<I2C> + I2c1BWOReg<I2C> {}
+trait I2cRW1BReg<I2C>: I2cR1BReg<I2C> + I2cW1BReg<I2C> {}
