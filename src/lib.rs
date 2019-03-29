@@ -22,8 +22,8 @@ trait Register {
     fn address(&self) -> Address;
 }
 
-trait ReadRegister<'a, Size>: Register {
-    fn read<I2C, Err>(&self) -> &Fn(&mut I2C, Address, Address) -> Result<Size, Err>
+trait I2cReadRegister<'a, Size>: Register {
+    fn i2c_read<I2C, Err>(&self) -> &Fn(&mut I2C, Address, Address) -> Result<Size, Err>
     where
         I2C: i2c::WriteRead<Error = Err>;
 }
@@ -49,7 +49,7 @@ impl From<byte_arr!(2)> for Temperature {
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
-#[derive(ReadRegister(len = 2))]
+//#[derive(I2cReadRegister(len = 2))]
 struct TemperatureRegister;
 
 impl Register for TemperatureRegister {
@@ -58,8 +58,8 @@ impl Register for TemperatureRegister {
     }
 }
 
-impl<'a> ReadRegister<'a, byte_arr!(2)> for TemperatureRegister {
-    fn read<I2C, Err>(&self) -> &Fn(&mut I2C, Address, Address) -> Result<byte_arr!(2), Err>
+impl<'a> I2cReadRegister<'a, byte_arr!(2)> for TemperatureRegister {
+    fn i2c_read<I2C, Err>(&self) -> &Fn(&mut I2C, Address, Address) -> Result<byte_arr!(2), Err>
     where
         I2C: i2c::WriteRead<Error = Err>,
     {
@@ -80,12 +80,12 @@ struct I2cInterface<I2C> {
 impl<I2C> I2cInterface<I2C> {
     fn read_register<'a, Size, Err>(
         &mut self,
-        register: impl ReadRegister<'a, Size>,
+        register: impl I2cReadRegister<'a, Size>,
     ) -> Result<Size, Err>
     where
         I2C: i2c::WriteRead<Error = Err>,
     {
-        register.read()(&mut self.i2c, self.address, register.address())
+        register.i2c_read()(&mut self.i2c, self.address, register.address())
     }
 }
 
