@@ -49,7 +49,9 @@ impl From<byte_arr!(2)> for Temperature {
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
-//#[derive(I2cReadRegister(len = 2))]
+//#[derive(I2cReadRegister)]
+//#[len = 2]
+//#[address = 0b1010]
 struct TemperatureRegister;
 
 impl Register for TemperatureRegister {
