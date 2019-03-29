@@ -49,6 +49,7 @@ impl From<byte_arr!(2)> for Temperature {
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(ReadRegister(len = 2))]
 struct TemperatureRegister;
 
 impl Register for TemperatureRegister {
