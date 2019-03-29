@@ -48,20 +48,21 @@ impl Into<[u8; 2]> for Temperature {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Copy)]
-//#[derive(I2cReadRegister)]
-//#[len = 2]
-//#[address = 0b1010]
-struct TemperatureRegister;
+macro_rules! reg {
+    ($name: ident, $addr: expr) => {
+        #[derive(Debug, PartialEq, Clone, Copy)]
+        struct $name;
 
-macro_rules! i2c_rw_reg {
-    ($name: ty, $len: tt, $addr: expr) => {
         impl Register for $name {
             fn address(&self) -> Address {
                 Address($addr)
             }
         }
+    };
+}
 
+macro_rules! i2c_read {
+    ($name: ident, $len: tt) => {
         impl<'a> I2cReadRegister<'a, [u8; $len]> for $name {
             fn i2c_read<I2C, Err>(&self) -> &Fn(&mut I2C, Address, Address) -> Result<[u8; 2], Err>
             where
@@ -74,7 +75,11 @@ macro_rules! i2c_rw_reg {
                 }
             }
         }
+    };
+}
 
+macro_rules! i2c_write {
+    ($name: ident, $len: tt) => {
         impl<'a> I2cWriteRegister<'a, [u8; 2]> for $name {
             fn i2c_write<I2C, Err>(
                 &self,
@@ -95,7 +100,27 @@ macro_rules! i2c_rw_reg {
     };
 }
 
-i2c_rw_reg!(TemperatureRegister, 2, 0b1010);
+macro_rules! i2c_rw_reg {
+    ($name: ident, addr: $addr: expr, len: $len: tt) => {
+        reg!($name, $addr);
+        i2c_read!($name, $len);
+        i2c_write!($name, $len);
+    };
+}
+
+macro_rules! i2c_ro_reg {
+    ($name: ident, addr: $addr: expr, len: $len: tt) => {
+        reg!($name, $addr);
+        i2c_read!($name, $len);
+    };
+}
+
+macro_rules! i2c_wo_reg {
+    ($name: ident, addr: $addr: expr, len: $len: tt) => {
+        reg!($name, $addr);
+        i2c_write!($name, $len);
+    };
+}
 
 #[derive(Debug)]
 struct I2cInterface<I2C> {
@@ -131,6 +156,8 @@ impl<I2C> I2cInterface<I2C> {
         )
     }
 }
+
+i2c_rw_reg!(TemperatureRegister, addr: 0b1010, len: 2);
 
 struct MCP9808<I2C> {
     i2c_interface: I2cInterface<I2C>,
