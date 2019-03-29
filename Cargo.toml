@@ -3,5 +3,7 @@ name = "mcp9808"
 version = "0.1.0"
 authors = ["lukwol <wolanczyk.lukasz@gmail.com>"]
 edition = "2018"
+
 [dependencies]
 embedded-hal = "0.2.2"
+i2c-reg = { path = "../i2c-reg" }
