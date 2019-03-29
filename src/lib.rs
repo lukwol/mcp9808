@@ -24,8 +24,8 @@ trait Register {
 
 trait ReadRegister<'a, Size>: Register {
     fn read<I2C, Err>(&self) -> &Fn(&mut I2C, Address, Address) -> Result<Size, Err>
-    where
-        I2C: i2c::WriteRead<Error = Err>;
+        where
+            I2C: i2c::WriteRead<Error=Err>;
 }
 
 struct Temperature(u16);
@@ -36,6 +36,7 @@ impl From<[u8; 2]> for Temperature {
     }
 }
 
+#[derive(Debug, PartialEq, Clone, Copy)]
 struct TemperatureRegister;
 
 impl Register for TemperatureRegister {
@@ -46,8 +47,8 @@ impl Register for TemperatureRegister {
 
 impl<'a> ReadRegister<'a, [u8; 2]> for TemperatureRegister {
     fn read<I2C, Err>(&self) -> &Fn(&mut I2C, Address, Address) -> Result<[u8; 2], Err>
-    where
-        I2C: i2c::WriteRead<Error = Err>,
+        where
+            I2C: i2c::WriteRead<Error=Err>,
     {
         &|i2c, device_address, reg_address| {
             let mut buff = [0; 2];
@@ -68,9 +69,21 @@ impl<I2C> I2cInterface<I2C> {
         &mut self,
         register: impl ReadRegister<'a, Size>,
     ) -> Result<Size, Err>
-    where
-        I2C: i2c::WriteRead<Error = Err>,
+        where
+            I2C: i2c::WriteRead<Error=Err>,
     {
         register.read()(&mut self.i2c, self.address, register.address())
+    }
+}
+
+struct MCP9808<I2C> {
+    i2c_interface: I2cInterface<I2C>,
+    temperature_register: TemperatureRegister,
+}
+
+impl<I2C> MCP9808<I2C> {
+    fn read_temperature<Err>(&mut self) -> Result<Temperature, Err> where
+        I2C: i2c::WriteRead<Error=Err>, {
+        self.i2c_interface.read_register(self.temperature_register).map(|a| a.into())
     }
 }
