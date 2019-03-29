@@ -4,6 +4,8 @@
 use crate::hal::blocking::i2c;
 use embedded_hal as hal;
 
+use core::marker::PhantomData;
+
 #[derive(Debug)]
 enum Error<E> {
     I2C(E),
@@ -18,113 +20,55 @@ impl From<Address> for u8 {
     }
 }
 
-#[derive(Debug)]
-struct MCP9808<I2C> {
+struct Register<Size> {
     address: Address,
-    i2c: I2C,
+    _pd: PhantomData<Size>,
 }
 
-trait I2cInterface<I2C> {
-    fn address(&self) -> Address;
-    fn i2c(&mut self) -> &mut I2C;
-}
-
-impl<I2C> I2cInterface<I2C> for MCP9808<I2C> {
-    fn address(&self) -> Address {
-        self.address
-    }
-
-    fn i2c(&mut self) -> &mut I2C {
-        &mut self.i2c
-    }
-}
-
-trait Register {
-    fn address(&self) -> Address;
-}
-
-// I2cRead1BReg
-
-trait Read1BReg<Value>: Register
-where
-    Value: From<[u8; 1]>,
-{
-}
-
-trait I2cRead1BReg<I2C> {
-    fn read_1_byte_register<Value, Err>(
-        &mut self,
-        register: &impl Read1BReg<Value>,
-    ) -> Result<Value, Err>
+trait ReadRegister<'a, Size> {
+    fn read_register<I2C, Value, Err>(
+        &self,
+    ) -> &Fn(&mut I2C, Address, Address) -> Result<Value, Err>
     where
         I2C: i2c::WriteRead<Error = Err>,
-        Value: From<[u8; 1]>;
+        Value: From<Size>;
 }
 
-impl<I2C> I2cRead1BReg<I2C> for I2cInterface<I2C> {
-    fn read_1_byte_register<Value, Err>(
-        &mut self,
-        register: &impl Read1BReg<Value>,
-    ) -> Result<Value, Err>
+impl<'a> ReadRegister<'a, [u8; 2]> for Register<[u8; 2]> {
+    fn read_register<I2C, Value, Err>(
+        &self,
+    ) -> &Fn(&mut I2C, Address, Address) -> Result<Value, Err>
     where
         I2C: i2c::WriteRead<Error = Err>,
-        Value: From<[u8; 1]>,
+        Value: From<[u8; 2]>,
     {
-        let mut buff = [0; 1];
-        let address_ptr = self.address().into();
-        self.i2c()
-            .write_read(address_ptr, &[register.address().into()], &mut buff)?;
-        Ok(Value::from(buff))
-    }
-}
-
-// I2cWrite1BReg
-
-trait Write1BReg<Value>: Register
-where
-    Value: Into<[u8; 1]>,
-{
-}
-
-trait I2cWrite1BReg<I2C> {
-    fn write_1_byte_register<Value, Err>(
-        &mut self,
-        register: &impl Write1BReg<Value>,
-        value: Value,
-    ) -> Result<(), Err>
-    where
-        I2C: i2c::Write<Error = Err>,
-        Value: Into<[u8; 1]>;
-}
-
-impl<I2C> I2cWrite1BReg<I2C> for MCP9808<I2C> {
-    fn write_1_byte_register<Value, Err>(
-        &mut self,
-        register: &impl Write1BReg<Value>,
-        value: Value,
-    ) -> Result<(), Err>
-    where
-        I2C: i2c::Write<Error = Err>,
-        Value: Into<[u8; 1]>,
-    {
-        let mut payload = [0; 2];
-        payload[0] = register.address().into();
-        for (i, item) in value.into().iter().enumerate() {
-            payload[i + 1] = *item;
+        &|i2c, device_address, reg_address| {
+            let mut buff = [0; 2];
+            i2c.write_read(device_address.into(), &[reg_address.into()], &mut buff)?;
+            Ok(Value::from(buff))
         }
-        let address_ptr = self.address().into();
-        self.i2c().write(address_ptr, &payload)?;
-        Ok(())
     }
 }
 
-//ReadWrite1BReg
+//fn read_1_byte_register<Value, Err>(
+//    &mut self,
+//    register: &impl Read1BReg<Value>,
+//) -> Result<Value, Err>
+//    where
+//        I2C: i2c::WriteRead<Error = Err>,
+//        Value: From<[u8; 1]>,
+//{
+//    let mut buff = [0; 1];
+//    let address_ptr = self.address().into();
+//    self.i2c()
+//        .write_read(address_ptr, &[register.address().into()], &mut buff)?;
+//    Ok(Value::from(buff))
+//}
 
-trait ReadWrite1BReg<Value>: Read1BReg<Value> + Write1BReg<Value>
-where
-    Value: From<[u8; 1]>,
-    Value: Into<[u8; 1]>,
-{
-}
+//
+//trait WriteRegister<Payload> {
+//}
 
-trait I2cReadWrite1BReg<I2C>: I2cRead1BReg<I2C> + I2cWrite1BReg<I2C> {}
+//impl ReadRegister<[] for Register<[u8; 1]> {
+//
+//}
