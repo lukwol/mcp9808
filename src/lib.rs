@@ -28,23 +28,23 @@ trait I2cReadRegister<'a, Size>: Register {
         I2C: i2c::WriteRead<Error = Err>;
 }
 
-macro_rules! byte_arr {
-    ($size: tt) => {
-        [u8; $size]
-    };
-}
-
-macro_rules! new_byte_arr {
-    ($size: tt) => {
-        [0; $size]
-    };
+trait I2cWriteRegister<'a, Size>: Register {
+    fn i2c_write<I2C, Err>(&self) -> &Fn(&mut I2C, Address, Address, Size) -> Result<(), Err>
+    where
+        I2C: i2c::Write<Error = Err>;
 }
 
 struct Temperature(u16);
 
-impl From<byte_arr!(2)> for Temperature {
-    fn from(_: byte_arr!(2)) -> Self {
+impl From<[u8; 2]> for Temperature {
+    fn from(_: [u8; 2]) -> Self {
         Temperature(0)
+    }
+}
+
+impl Into<[u8; 2]> for Temperature {
+    fn into(self) -> [u8; 2] {
+        [0, 0]
     }
 }
 
@@ -60,15 +60,31 @@ impl Register for TemperatureRegister {
     }
 }
 
-impl<'a> I2cReadRegister<'a, byte_arr!(2)> for TemperatureRegister {
-    fn i2c_read<I2C, Err>(&self) -> &Fn(&mut I2C, Address, Address) -> Result<byte_arr!(2), Err>
+impl<'a> I2cReadRegister<'a, [u8; 2]> for TemperatureRegister {
+    fn i2c_read<I2C, Err>(&self) -> &Fn(&mut I2C, Address, Address) -> Result<[u8; 2], Err>
     where
         I2C: i2c::WriteRead<Error = Err>,
     {
         &|i2c, device_address, reg_address| {
-            let mut buff = new_byte_arr!(2);
+            let mut buff = [0; 2];
             i2c.write_read(device_address.into(), &[reg_address.into()], &mut buff)?;
             Ok(buff)
+        }
+    }
+}
+
+impl<'a> I2cWriteRegister<'a, [u8; 2]> for TemperatureRegister {
+    fn i2c_write<I2C, Err>(&self) -> &Fn(&mut I2C, Address, Address, [u8; 2]) -> Result<(), Err>
+    where
+        I2C: i2c::Write<Error = Err>,
+    {
+        &|i2c, device_address, reg_address, value| {
+            let mut payload = [0; 3];
+            payload[0] = reg_address.into();
+            for (i, item) in value.iter().enumerate() {
+                payload[i + 1] = *item;
+            }
+            i2c.write(device_address.into(), &payload)
         }
     }
 }
@@ -80,14 +96,31 @@ struct I2cInterface<I2C> {
 }
 
 impl<I2C> I2cInterface<I2C> {
-    fn read_register<'a, Size, Err>(
+    fn read_register<'a, Size, Value, Err>(
         &mut self,
         register: impl I2cReadRegister<'a, Size>,
-    ) -> Result<Size, Err>
+    ) -> Result<Value, Err>
     where
         I2C: i2c::WriteRead<Error = Err>,
+        Value: From<Size>,
     {
-        register.i2c_read()(&mut self.i2c, self.address, register.address())
+        register.i2c_read()(&mut self.i2c, self.address, register.address()).map(|v| v.into())
+    }
+
+    fn write_register<'a, Size, Err>(
+        &mut self,
+        register: impl I2cWriteRegister<'a, Size>,
+        value: impl Into<Size>,
+    ) -> Result<(), Err>
+    where
+        I2C: i2c::Write<Error = Err>,
+    {
+        register.i2c_write()(
+            &mut self.i2c,
+            self.address,
+            register.address(),
+            value.into(),
+        )
     }
 }
 
@@ -101,8 +134,14 @@ impl<I2C> MCP9808<I2C> {
     where
         I2C: i2c::WriteRead<Error = Err>,
     {
+        self.i2c_interface.read_register(self.temperature_register)
+    }
+
+    fn write_temperature<Err>(&mut self, temperature: Temperature) -> Result<(), Err>
+    where
+        I2C: i2c::Write<Error = Err>,
+    {
         self.i2c_interface
-            .read_register(self.temperature_register)
-            .map(|a| a.into())
+            .write_register(self.temperature_register, temperature)
     }
 }
