@@ -13,12 +13,12 @@ pub enum Resolution {
 
 impl From<[u8; 1]> for Resolution {
     fn from(val: [u8; 1]) -> Self {
-        match val {
-            [0b00] => Resolution::Deg05c,
-            [0b01] => Resolution::Deg025c,
-            [0b10] => Resolution::Deg0125c,
-            [0b11] => Resolution::Deg00625c,
-            _ => panic!("invalid resolution"),
+        match val[0] & 0b11 {
+            0b00 => Resolution::Deg05c,
+            0b01 => Resolution::Deg025c,
+            0b10 => Resolution::Deg0125c,
+            0b11 => Resolution::Deg00625c,
+            _ => panic!("impossible happened"),
         }
     }
 }
