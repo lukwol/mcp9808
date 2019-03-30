@@ -41,14 +41,14 @@ impl Resolution {
 }
 
 impl<I2C> MCP9808<I2C> {
-    pub fn read_resolution<Unit, Err>(&mut self) -> Result<Resolution, Err>
+    pub fn read_resolution<Err>(&mut self) -> Result<Resolution, Err>
     where
         I2C: i2c::WriteRead<Error = Err>,
     {
         self.i2c_interface.read_register(ResolutionRegister)
     }
 
-    pub fn write_resolution<Unit, Err>(&mut self, resolution: Resolution) -> Result<(), Err>
+    pub fn write_resolution<Err>(&mut self, resolution: Resolution) -> Result<(), Err>
     where
         I2C: i2c::Write<Error = Err>,
     {
