@@ -1,5 +1,5 @@
 #![no_std]
-#![allow(dead_code, unused_macros)]
+#![allow(dead_code)]
 
 use crate::hal::blocking::i2c;
 use embedded_hal as hal;
@@ -21,9 +21,39 @@ impl Into<[u8; 2]> for Temperature {
 
 i2c_rw_reg!(TemperatureRegister, addr: 0b1010, len: 2);
 
+#[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
+enum SlaveAddress {
+    Default,
+    Alternative(bool, bool, bool),
+}
+
+impl From<SlaveAddress> for Address {
+    fn from(slave_address: SlaveAddress) -> Self {
+        let default_addr_ptr = 0b1_1000;
+        match slave_address {
+            SlaveAddress::Default => Address(default_addr_ptr),
+            SlaveAddress::Alternative(a2, a1, a0) => {
+                Address(default_addr_ptr | (a2 as u8) << 2 | (a1 as u8) << 1 | (a0 as u8))
+            }
+        }
+    }
+}
+
 struct MCP9808<I2C> {
     i2c_interface: I2cInterface<I2C>,
     temperature_register: TemperatureRegister,
+}
+
+impl<I2C> MCP9808<I2C> {
+    fn new(i2c: I2C, address: SlaveAddress) -> Self {
+        MCP9808 {
+            i2c_interface: I2cInterface {
+                i2c,
+                address: address.into(),
+            },
+            temperature_register: TemperatureRegister,
+        }
+    }
 }
 
 impl<I2C> MCP9808<I2C> {
