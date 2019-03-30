@@ -8,7 +8,6 @@ use i2c_reg::*;
 mod address;
 mod resolution;
 mod temperature;
-mod units;
 
 i2c_ro_reg!(AmbientTemperatureRegister, addr: 0b1010, len: 2);
 i2c_rw_reg!(ResolutionRegister, addr: 0b1000, len: 1);
