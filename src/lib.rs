@@ -5,9 +5,10 @@ use address::SlaveAddress;
 use embedded_hal as hal;
 use i2c_reg::*;
 
-mod address;
-mod resolution;
-mod temperature;
+// TODO: Change to public use
+pub mod address;
+pub mod resolution;
+pub mod temperature;
 
 i2c_ro_reg!(AmbientTemperatureRegister, addr: 0b1010, len: 2);
 i2c_rw_reg!(ResolutionRegister, addr: 0b1000, len: 1);
