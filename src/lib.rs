@@ -1,19 +1,19 @@
 #![no_std]
 
-use crate::address::SlaveAddress;
+use self::hal::blocking::i2c;
+pub use address::SlaveAddress;
 use embedded_hal as hal;
-use i2c_reg::I2cInterface;
-use registers::*;
+use i2c_reg::*;
 
-mod registers;
+pub mod address;
+pub mod resolution;
+pub mod temperature;
 
-mod temperature;
-
-mod address;
+i2c_ro_reg!(AmbientTemperatureRegister, addr: 0b1010, len: 2);
+i2c_rw_reg!(ResolutionRegister, addr: 0b1000, len: 1);
 
 pub struct MCP9808<I2C> {
     i2c_interface: I2cInterface<I2C>,
-    ambient_temperature_register: AmbientTemperatureRegister,
 }
 
 impl<I2C> MCP9808<I2C> {
@@ -23,7 +23,6 @@ impl<I2C> MCP9808<I2C> {
                 i2c,
                 address: address.into(),
             },
-            ambient_temperature_register: AmbientTemperatureRegister,
         }
     }
 }
