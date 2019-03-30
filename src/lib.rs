@@ -1,13 +1,14 @@
 #![no_std]
 
 use self::hal::blocking::i2c;
-pub use address::SlaveAddress;
+use address::SlaveAddress;
 use embedded_hal as hal;
 use i2c_reg::*;
 
-pub mod address;
-pub mod resolution;
-pub mod temperature;
+mod address;
+mod resolution;
+mod temperature;
+mod units;
 
 i2c_ro_reg!(AmbientTemperatureRegister, addr: 0b1010, len: 2);
 i2c_rw_reg!(ResolutionRegister, addr: 0b1000, len: 1);

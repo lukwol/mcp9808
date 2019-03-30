@@ -2,12 +2,7 @@ use crate::hal::blocking::i2c;
 use crate::ResolutionRegister;
 use crate::MCP9808;
 use core::marker::PhantomData;
-
-#[derive(Debug)]
-struct Millicelsius;
-
-#[derive(Debug)]
-struct Celsius;
+use crate::units::{Millicelsius, Celsius};
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 #[repr(u8)]
@@ -42,12 +37,12 @@ impl<Unit> From<Resolution<Unit>> for [u8; 1] {
 }
 
 impl Resolution<Millicelsius> {
-    pub fn precision_10k(self) -> i32 {
+    pub fn precision(self) -> i32 {
         match self {
-            Resolution::Deg05c(_) => 5000,
-            Resolution::Deg025c(_) => 2500,
-            Resolution::Deg0125c(_) => 1250,
-            Resolution::Deg00625c(_) => 625,
+            Resolution::Deg05c(_) => 500,
+            Resolution::Deg025c(_) => 250,
+            Resolution::Deg0125c(_) => 125,
+            Resolution::Deg00625c(_) => 62,
         }
     }
 }
