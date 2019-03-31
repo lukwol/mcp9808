@@ -103,7 +103,7 @@ mod conversion {
     use crate::temperature::{Celsius, Millicelsius};
 
     #[test]
-    fn millicelsius_to_celsius() {
+    fn celsius_to_millicelsius() {
         assert_eq!(Celsius(25.367), Millicelsius(25_367).into());
         assert_eq!(Celsius(-0.789), Millicelsius(-789).into());
     }
