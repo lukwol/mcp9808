@@ -10,6 +10,9 @@ pub mod address;
 pub mod resolution;
 pub mod temperature;
 
+i2c_rw_reg!(UpperTemperatureRegister, addr: 0b0010, len: 2);
+i2c_rw_reg!(LowerTemperatureRegister, addr: 0b0011, len: 2);
+i2c_rw_reg!(CriticalTemperatureRegister, addr: 0b0100, len: 2);
 i2c_ro_reg!(AmbientTemperatureRegister, addr: 0b0101, len: 2);
 i2c_rw_reg!(ResolutionRegister, addr: 0b1000, len: 1);
 
