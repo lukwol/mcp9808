@@ -3,7 +3,10 @@ use crate::MCP9808;
 
 use i2c_reg::*;
 
-const TEMPERATURE_SIGN_BIT: u8 = 0b1_0000;
+const ALERT_CRITICAL_BIT: u8 = 1 << 7;
+const ALERT_UPPER_BIT: u8 = 1 << 6;
+const ALERT_LOWER_BIT: u8 = 1 << 5;
+const TEMPERATURE_SIGN_BIT: u8 = 1 << 4;
 
 #[derive(Debug, PartialOrd, PartialEq, Copy, Clone)]
 pub struct Millicelsius(pub i32);
@@ -69,23 +72,25 @@ impl From<Celsius> for [u8; 2] {
 }
 
 #[derive(Debug, PartialOrd, PartialEq, Copy, Clone)]
-pub struct Temperature<Unit>(pub Unit);
+pub struct Temperature<Unit> {
+    pub degrees: Unit,
+    pub is_critical: bool,
+    pub is_upper: bool,
+    pub is_lower: bool,
+}
 
 impl<Unit> From<[u8; 2]> for Temperature<Unit>
 where
     Unit: From<[u8; 2]>,
 {
     fn from(raw: [u8; 2]) -> Self {
-        Temperature(Unit::from(raw))
-    }
-}
-
-impl<Unit> From<Temperature<Unit>> for [u8; 2]
-where
-    Unit: Into<[u8; 2]>,
-{
-    fn from(temperature: Temperature<Unit>) -> Self {
-        temperature.0.into()
+        let msb = raw[0];
+        Temperature {
+            degrees: Unit::from(raw),
+            is_critical: msb & ALERT_CRITICAL_BIT == 1,
+            is_upper: msb & ALERT_UPPER_BIT == 1,
+            is_lower: msb & ALERT_LOWER_BIT == 1,
+        }
     }
 }
 
@@ -106,10 +111,7 @@ macro_rules! read_temperature_register {
 macro_rules! write_temperature_register {
     ($register: expr, $function_name: ident) => {
         impl<I2C> MCP9808<I2C> {
-            pub fn $function_name<Unit, Err>(
-                &mut self,
-                temperature: Temperature<Unit>,
-            ) -> Result<(), Err>
+            pub fn $function_name<Unit, Err>(&mut self, temperature: Unit) -> Result<(), Err>
             where
                 I2C: i2c::Write<Error = Err>,
                 Unit: Into<[u8; 2]>,
