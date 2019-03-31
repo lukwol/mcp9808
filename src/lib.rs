@@ -5,7 +5,7 @@ use address::SlaveAddress;
 use embedded_hal as hal;
 use i2c_reg::*;
 
-// TODO: Change to public use
+// TODO: Change to private use
 pub mod address;
 pub mod resolution;
 pub mod temperature;
