@@ -25,18 +25,18 @@ impl From<[u8; 2]> for Millicelsius {
 
 impl From<Millicelsius> for [u8; 2] {
     fn from(millicelsius: Millicelsius) -> Self {
-        let value = millicelsius.0;
+        let input = millicelsius.0;
+        let value = (input + 256000) % 256000;
         let integer = value / 1000;
-        let integer_msb = integer >> 4 & 0b111;
+        let mut integer_msb = integer >> 4 & 0b1111;
         let integer_lsb = integer & 0b1111;
         let fraction = value % 1000 / 62;
+        if input < 0 {
+            integer_msb |= 0b1_0000;
+        }
         let msb = integer_msb as u8;
         let lsb = ((integer_lsb << 4) + fraction) as u8;
-        if value < 0 {
-            [!msb & 0b111, !lsb]
-        } else {
-            [msb, lsb]
-        }
+        [msb, lsb]
     }
 }
 
