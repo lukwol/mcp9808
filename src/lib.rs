@@ -10,7 +10,7 @@ pub mod address;
 pub mod resolution;
 pub mod temperature;
 
-i2c_ro_reg!(AmbientTemperatureRegister, addr: 0b1010, len: 2);
+i2c_ro_reg!(AmbientTemperatureRegister, addr: 0b0101, len: 2);
 i2c_rw_reg!(ResolutionRegister, addr: 0b1000, len: 1);
 
 pub struct MCP9808<I2C> {

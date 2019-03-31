@@ -1,5 +1,4 @@
 use crate::hal::blocking::i2c;
-use crate::resolution::Resolution;
 use crate::AmbientTemperatureRegister;
 use crate::MCP9808;
 
@@ -8,24 +7,26 @@ const TEMPERATURE_SIGN_BIT: u8 = 0b1_0000;
 #[derive(Debug, Clone, Copy)]
 pub struct Milicelsius(pub i32);
 
-impl Milicelsius {
-    fn from_reading(reading: [u8; 2], resolution: Resolution) -> Milicelsius {
-        let (msb, lsb) = (reading[0], reading[1]);
+impl From<[u8; 2]> for Milicelsius {
+    fn from(raw: [u8; 2]) -> Self {
+        let (msb, lsb) = (raw[0], raw[1]);
 
-        let fraction =
-            (i32::from((lsb & 0b1111) >> (0b11 - resolution as u8)) * resolution.precision()) / 10;
-
-        let celsius = {
-            let mut msb = msb & 0b1_1111;
-            if msb & TEMPERATURE_SIGN_BIT == 0 {
-                i32::from((msb << 4) + (lsb >> 4))
-            } else {
-                msb &= 0b1111;
-                i32::from((msb << 4) + (lsb >> 4)) - 256
-            }
-        };
+        let fraction = (0..4).fold(0, |acc, x| acc + i32::from(lsb & 1 << x) * 625) / 10;
+        let mut celsius = (0..4).fold(0, |acc, x| {
+            acc + (i32::from(msb & 1 << x) << 4) + i32::from(lsb >> 4 & 1 << x)
+        });
+        if msb & TEMPERATURE_SIGN_BIT != 0 {
+            celsius -= 1 << 8
+        }
 
         Milicelsius(celsius * 1000 + fraction)
+    }
+}
+
+impl From<Milicelsius> for [u8; 2] {
+    fn from(milicelsius: Milicelsius) -> Self {
+        // TODO: Implement
+        [0, 0]
     }
 }
 
@@ -45,25 +46,18 @@ impl From<Celsius> for Milicelsius {
 }
 
 impl<I2C> MCP9808<I2C> {
-    pub fn read_ambient_temperature_milicelsius<Err>(
-        &mut self,
-        resolution: Resolution,
-    ) -> Result<Milicelsius, Err>
+    pub fn read_ambient_temperature_milicelsius<Err>(&mut self) -> Result<Milicelsius, Err>
     where
         I2C: i2c::WriteRead<Error = Err>,
     {
-        self.i2c_interface
-            .read_register(AmbientTemperatureRegister)
-            .map(|v| Milicelsius::from_reading(v, resolution))
+        self.i2c_interface.read_register(AmbientTemperatureRegister)
     }
 
-    pub fn read_ambient_temperature_celsius<Err>(
-        &mut self,
-        resolution: Resolution,
-    ) -> Result<Celsius, Err>
-        where
-            I2C: i2c::WriteRead<Error = Err>,
+    pub fn read_ambient_temperature_celsius<Err>(&mut self) -> Result<Celsius, Err>
+    where
+        I2C: i2c::WriteRead<Error = Err>,
     {
-        self.read_ambient_temperature_milicelsius(resolution).map(|v| v.into())
+        self.read_ambient_temperature_milicelsius()
+            .map(|v| v.into())
     }
 }
