@@ -24,9 +24,19 @@ impl From<[u8; 2]> for Millicelsius {
 }
 
 impl From<Millicelsius> for [u8; 2] {
-    fn from(_millicelsius: Millicelsius) -> Self {
-        // TODO: Implement
-        [0, 0]
+    fn from(millicelsius: Millicelsius) -> Self {
+        let value = millicelsius.0;
+        let integer = value / 1000;
+        let integer_msb = integer >> 4 & 0b111;
+        let integer_lsb = integer & 0b1111;
+        let fraction = value % 1000 / 62;
+        let msb = integer_msb as u8;
+        let lsb = ((integer_lsb << 4) + fraction) as u8;
+        if value < 0 {
+            [!msb & 0b111, !lsb]
+        } else {
+            [msb, lsb]
+        }
     }
 }
 
