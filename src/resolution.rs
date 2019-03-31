@@ -1,6 +1,7 @@
 use crate::hal::blocking::i2c;
-use crate::ResolutionRegister;
 use crate::MCP9808;
+
+use i2c_reg::*;
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 #[repr(u8)]
@@ -28,6 +29,8 @@ impl From<Resolution> for [u8; 1] {
         [res as u8]
     }
 }
+
+i2c_rw_reg!(ResolutionRegister, addr: 0b1000, len: 1);
 
 impl<I2C> MCP9808<I2C> {
     pub fn read_resolution<Err>(&mut self) -> Result<Resolution, Err>
