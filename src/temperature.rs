@@ -26,10 +26,10 @@ impl From<[u8; 2]> for Millicelsius {
 impl From<Millicelsius> for [u8; 2] {
     fn from(millicelsius: Millicelsius) -> Self {
         let value = millicelsius.0;
-        let write_value = (value + 256000) % 256000;
+        let write_value = (value + 256_000) % 256_000;
 
-        let integer = write_value / 1000;
-        let fraction = write_value % 1000;
+        let integer = write_value / 1_000;
+        let fraction = write_value % 1_000;
 
         let mut msb = (integer >> 4 & 0b1111) as u8;
         if value < 0 {
