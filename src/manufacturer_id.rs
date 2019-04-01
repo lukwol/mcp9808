@@ -2,11 +2,13 @@ use i2c_reg::*;
 use crate::MCP9808;
 use embedded_hal::blocking::i2c;
 
+const MANUFACTURER_ID: u16 = 0x0054;
+
 pub struct ManufacturerId(pub u16);
 
 impl ManufacturerId {
     pub fn is_valid(&self) -> bool {
-        self.0 == 0x0054
+        self.0 == MANUFACTURER_ID
     }
 }
 
@@ -17,7 +19,7 @@ impl From<[u8; 2]> for ManufacturerId {
     }
 }
 
-i2c_ro_reg!(ManufacturerIdRegister, addr: 0b0101, len: 2);
+i2c_ro_reg!(ManufacturerIdRegister, addr: 0b0110, len: 2);
 
 impl<I2C> MCP9808<I2C> {
     pub fn read_manufacturer_id<Err>(&mut self) -> Result<ManufacturerId, Err>

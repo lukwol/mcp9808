@@ -6,9 +6,10 @@ use i2c_reg::I2cInterface;
 
 // TODO: Change to private use
 pub mod address;
+pub mod device_information;
+pub mod manufacturer_id;
 pub mod resolution;
 pub mod temperature;
-pub mod manufacturer_id;
 
 pub struct MCP9808<I2C> {
     i2c_interface: I2cInterface<I2C>,
