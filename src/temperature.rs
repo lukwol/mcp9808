@@ -37,7 +37,7 @@ impl From<Millicelsius> for [u8; 2] {
 
         let mut msb = (integer >> 4 & 0b1111) as u8;
         if value < 0 {
-            msb |= 0b1_0000;
+            msb |= TEMPERATURE_SIGN_BIT;
         }
         let lsb = (((integer & 0b1111) << 4) + fraction / 62) as u8;
         [msb, lsb]
