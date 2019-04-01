@@ -72,24 +72,24 @@ impl From<Celsius> for [u8; 2] {
 }
 
 #[derive(Debug, PartialOrd, PartialEq, Copy, Clone)]
-pub struct Temperature<Unit> {
-    pub degrees: Unit,
+pub struct TemperatureMeasurement<Unit> {
+    pub temperature: Unit,
     pub is_critical: bool,
     pub is_upper: bool,
     pub is_lower: bool,
 }
 
-impl<Unit> From<[u8; 2]> for Temperature<Unit>
+impl<Unit> From<[u8; 2]> for TemperatureMeasurement<Unit>
 where
     Unit: From<[u8; 2]>,
 {
     fn from(raw: [u8; 2]) -> Self {
         let msb = raw[0];
-        Temperature {
-            degrees: Unit::from(raw),
-            is_critical: msb & ALERT_CRITICAL_BIT == 1,
-            is_upper: msb & ALERT_UPPER_BIT == 1,
-            is_lower: msb & ALERT_LOWER_BIT == 1,
+        TemperatureMeasurement {
+            temperature: Unit::from(raw),
+            is_critical: !msb & ALERT_CRITICAL_BIT == 0,
+            is_upper: !msb & ALERT_UPPER_BIT == 0,
+            is_lower: !msb & ALERT_LOWER_BIT == 0,
         }
     }
 }
@@ -97,7 +97,7 @@ where
 macro_rules! read_temperature_register {
     ($register: expr, $function_name: ident) => {
         impl<I2C> MCP9808<I2C> {
-            pub fn $function_name<Unit, Err>(&mut self) -> Result<Temperature<Unit>, Err>
+            pub fn $function_name<Unit, Err>(&mut self) -> Result<TemperatureMeasurement<Unit>, Err>
             where
                 I2C: i2c::WriteRead<Error = Err>,
                 Unit: From<[u8; 2]>,
