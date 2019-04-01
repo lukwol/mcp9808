@@ -95,9 +95,9 @@ where
 }
 
 macro_rules! read_temperature_register {
-    ($register: expr, $function_name: ident) => {
+    ($register: expr, $function_name: ident, $type: ty) => {
         impl<I2C> MCP9808<I2C> {
-            pub fn $function_name<Unit, Err>(&mut self) -> Result<TemperatureMeasurement<Unit>, Err>
+            pub fn $function_name<Unit, Err>(&mut self) -> Result<$type, Err>
             where
                 I2C: i2c::WriteRead<Error = Err>,
                 Unit: From<[u8; 2]>,
@@ -123,16 +123,16 @@ macro_rules! write_temperature_register {
 }
 
 i2c_ro_reg!(AmbientTemperatureRegister, addr: 0b0101, len: 2);
-read_temperature_register!(AmbientTemperatureRegister, read_ambient_temperature);
+read_temperature_register!(AmbientTemperatureRegister, read_ambient_temperature, TemperatureMeasurement<Unit>);
 
 i2c_rw_reg!(UpperTemperatureRegister, addr: 0b0010, len: 2);
-read_temperature_register!(UpperTemperatureRegister, read_upper_temperature);
+read_temperature_register!(UpperTemperatureRegister, read_upper_temperature, Unit);
 write_temperature_register!(UpperTemperatureRegister, write_upper_temperature);
 
 i2c_rw_reg!(LowerTemperatureRegister, addr: 0b0011, len: 2);
-read_temperature_register!(LowerTemperatureRegister, read_lower_temperature);
+read_temperature_register!(LowerTemperatureRegister, read_lower_temperature, Unit);
 write_temperature_register!(LowerTemperatureRegister, write_lower_temperature);
 
 i2c_rw_reg!(CriticalTemperatureRegister, addr: 0b0100, len: 2);
-read_temperature_register!(CriticalTemperatureRegister, read_critical_temperature);
+read_temperature_register!(CriticalTemperatureRegister, read_critical_temperature, Unit);
 write_temperature_register!(CriticalTemperatureRegister, write_critical_temperature);
