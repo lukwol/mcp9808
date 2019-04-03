@@ -94,7 +94,7 @@ where
     }
 }
 
-macro_rules! read_temperature_register {
+macro_rules! impl_read_temperature_register {
     ($register: expr, $function_name: ident, $type: ty) => {
         impl<I2C> MCP9808<I2C> {
             pub fn $function_name<Unit, Err>(&mut self) -> Result<$type, Err>
@@ -108,7 +108,7 @@ macro_rules! read_temperature_register {
     };
 }
 
-macro_rules! write_temperature_register {
+macro_rules! impl_write_temperature_register {
     ($register: expr, $function_name: ident) => {
         impl<I2C> MCP9808<I2C> {
             pub fn $function_name<Unit, Err>(&mut self, temperature: Unit) -> Result<(), Err>
@@ -123,16 +123,20 @@ macro_rules! write_temperature_register {
 }
 
 i2c_ro_reg!(AmbientTemperatureRegister, addr: 0b0101, len: 2);
-read_temperature_register!(AmbientTemperatureRegister, read_ambient_temperature, TemperatureMeasurement<Unit>);
+impl_read_temperature_register!(
+    AmbientTemperatureRegister,
+    read_ambient_temperature,
+    TemperatureMeasurement<Unit>
+);
 
 i2c_rw_reg!(UpperTemperatureRegister, addr: 0b0010, len: 2);
-read_temperature_register!(UpperTemperatureRegister, read_upper_temperature, Unit);
-write_temperature_register!(UpperTemperatureRegister, write_upper_temperature);
+impl_read_temperature_register!(UpperTemperatureRegister, read_upper_temperature, Unit);
+impl_write_temperature_register!(UpperTemperatureRegister, write_upper_temperature);
 
 i2c_rw_reg!(LowerTemperatureRegister, addr: 0b0011, len: 2);
-read_temperature_register!(LowerTemperatureRegister, read_lower_temperature, Unit);
-write_temperature_register!(LowerTemperatureRegister, write_lower_temperature);
+impl_read_temperature_register!(LowerTemperatureRegister, read_lower_temperature, Unit);
+impl_write_temperature_register!(LowerTemperatureRegister, write_lower_temperature);
 
 i2c_rw_reg!(CriticalTemperatureRegister, addr: 0b0100, len: 2);
-read_temperature_register!(CriticalTemperatureRegister, read_critical_temperature, Unit);
-write_temperature_register!(CriticalTemperatureRegister, write_critical_temperature);
+impl_read_temperature_register!(CriticalTemperatureRegister, read_critical_temperature, Unit);
+impl_write_temperature_register!(CriticalTemperatureRegister, write_critical_temperature);
