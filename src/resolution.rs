@@ -6,19 +6,19 @@ use i2c_reg::*;
 #[derive(Debug, PartialEq, Clone, Copy)]
 #[repr(u8)]
 pub enum Resolution {
-    Deg05c = 0b00,
-    Deg025c = 0b01,
-    Deg0125c = 0b10,
-    Deg00625c = 0b11,
+    Deg0_5C = 0b00,
+    Deg0_25C = 0b01,
+    Deg0_125C = 0b10,
+    Deg0_0625C = 0b11,
 }
 
 impl From<[u8; 1]> for Resolution {
     fn from(raw: [u8; 1]) -> Self {
         match raw[0] & 0b11 {
-            0b00 => Resolution::Deg05c,
-            0b01 => Resolution::Deg025c,
-            0b10 => Resolution::Deg0125c,
-            0b11 => Resolution::Deg00625c,
+            0b00 => Resolution::Deg0_5C,
+            0b01 => Resolution::Deg0_25C,
+            0b10 => Resolution::Deg0_125C,
+            0b11 => Resolution::Deg0_0625C,
             _ => panic!("impossible happened"),
         }
     }
