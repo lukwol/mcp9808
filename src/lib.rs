@@ -1,6 +1,6 @@
 #![no_std]
 
-use address::SlaveAddress;
+use address::Address;
 use embedded_hal as hal;
 use i2c_reg::I2cInterface;
 
@@ -17,7 +17,7 @@ pub struct MCP9808<I2C> {
 }
 
 impl<I2C> MCP9808<I2C> {
-    pub fn new(i2c: I2C, address: SlaveAddress) -> Self {
+    pub fn new(i2c: I2C, address: Address) -> Self {
         MCP9808 {
             i2c_interface: I2cInterface {
                 i2c,
