@@ -135,50 +135,60 @@ impl ConfigurationBuilder {
         }
     }
 
-    pub fn set_hysteresis(&mut self, hysteresis: Hysteresis) {
+    pub fn set_hysteresis(mut self, hysteresis: Hysteresis) -> Self {
         self.configuration.hysteresis = hysteresis;
+        self
     }
 
-    pub fn set_shutdown_mode(&mut self, shutdown_mode: ShutdownMode) {
+    pub fn set_shutdown_mode(mut self, shutdown_mode: ShutdownMode) -> Self {
         self.configuration.shutdown_mode = shutdown_mode;
+        self
     }
 
     pub fn set_critical_temperature_lock(
-        &mut self,
+        mut self,
         critical_temperature_lock: CriticalTemperatureLock,
-    ) {
+    ) -> Self {
         self.configuration.critical_temperature_lock = critical_temperature_lock;
+        self
     }
 
     pub fn set_upper_lower_temperature_window_lock(
-        &mut self,
+        mut self,
         upper_lower_temperature_window_lock: TemperatureWindowLock,
-    ) {
+    ) -> Self {
         self.configuration.temperature_window_lock = upper_lower_temperature_window_lock;
+        self
     }
 
-    pub fn set_interrupt_clear(&mut self, interrupt_clear: InterruptClear) {
+    pub fn set_interrupt_clear(mut self, interrupt_clear: InterruptClear) -> Self {
         self.configuration.interrupt_clear = interrupt_clear;
+        self
     }
 
-    pub fn set_alert_output_status(&mut self, alert_output_status: AlertOutputStatus) {
+    pub fn set_alert_output_status(mut self, alert_output_status: AlertOutputStatus) -> Self {
         self.configuration.alert_output_status = alert_output_status;
+        self
     }
 
-    pub fn set_alert_output_control(&mut self, alert_output_control: AlertOutputControl) {
+    pub fn set_alert_output_control(mut self, alert_output_control: AlertOutputControl) -> Self {
         self.configuration.alert_output_control = alert_output_control;
+        self
     }
 
-    pub fn set_alert_output_select(&mut self, alert_output_select: AlertOutputSelect) {
+    pub fn set_alert_output_select(mut self, alert_output_select: AlertOutputSelect) -> Self {
         self.configuration.alert_output_select = alert_output_select;
+        self
     }
 
-    pub fn set_alert_output_polarity(&mut self, alert_output_polarity: AlertOutputPolarity) {
+    pub fn set_alert_output_polarity(mut self, alert_output_polarity: AlertOutputPolarity) -> Self {
         self.configuration.alert_output_polarity = alert_output_polarity;
+        self
     }
 
-    pub fn set_alert_output_mode(&mut self, alert_output_mode: AlertOutputMode) {
+    pub fn set_alert_output_mode(mut self, alert_output_mode: AlertOutputMode) -> Self {
         self.configuration.alert_output_mode = alert_output_mode;
+        self
     }
 
     pub fn build(self) -> Result<Configuration, InvalidConfigurationError> {
