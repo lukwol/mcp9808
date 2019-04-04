@@ -8,4 +8,4 @@ edition = "2018"
 embedded-hal = "0.2.2"
 num-traits = "0.2"
 num-derive = "0.2"
-i2c-reg = { path = "../i2c-reg" }
+i2c-reg = { version = "0.1", path = "../i2c-reg/i2c-reg" }
