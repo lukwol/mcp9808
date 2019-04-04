@@ -24,7 +24,7 @@ pub enum CriticalTemperatureLock {
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
-pub enum UpperLowerTemperatureWindowLock {
+pub enum TemperatureWindowLock {
     Unlocked = 0,
     Locked = 1,
 }
@@ -64,12 +64,12 @@ pub enum AlertOutputMode {
     Interrupt = 1,
 }
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Configuration {
     hysteresis: Hysteresis,
     shutdown_mode: ShutdownMode,
     critical_temperature_lock: CriticalTemperatureLock,
-    upper_lower_temperature_window_lock: UpperLowerTemperatureWindowLock,
+    temperature_window_lock: TemperatureWindowLock,
     interrupt_clear: InterruptClear,
     alert_output_status: AlertOutputStatus,
     alert_output_control: AlertOutputControl,
@@ -85,10 +85,7 @@ impl From<[u8; 2]> for Configuration {
             hysteresis: Hysteresis::from_u8(msb & 0b11 << 1).unwrap(),
             shutdown_mode: ShutdownMode::from_u8(msb & 1).unwrap(),
             critical_temperature_lock: CriticalTemperatureLock::from_u8(lsb & 1 << 7).unwrap(),
-            upper_lower_temperature_window_lock: UpperLowerTemperatureWindowLock::from_u8(
-                lsb & 1 << 6,
-            )
-            .unwrap(),
+            temperature_window_lock: TemperatureWindowLock::from_u8(lsb & 1 << 6).unwrap(),
             interrupt_clear: InterruptClear::from_u8(lsb & 1 << 5).unwrap(),
             alert_output_status: AlertOutputStatus::from_u8(lsb & 1 << 3).unwrap(),
             alert_output_control: AlertOutputControl::from_u8(lsb & 1 << 3).unwrap(),
@@ -104,7 +101,7 @@ impl From<Configuration> for [u8; 2] {
         let (mut msb, mut lsb) = (0, 0);
         msb += config.hysteresis as u8 + config.shutdown_mode as u8;
         lsb += config.critical_temperature_lock as u8
-            + config.upper_lower_temperature_window_lock as u8
+            + config.temperature_window_lock as u8
             + config.interrupt_clear as u8
             + config.alert_output_status as u8
             + config.alert_output_control as u8
@@ -117,26 +114,23 @@ impl From<Configuration> for [u8; 2] {
 
 #[derive(Debug)]
 pub enum InvalidConfigurationError {
-    Hysteresis,
-    ShutdownMode,
-    CriticalTemperatureLock,
-    UpperLowerTemperatureWindowLock,
-    InterruptClear,
-    AlertOutputStatus,
-    AlertOutputControl,
-    AlertOutputSelect,
-    AlertOutputPolarity,
-    AlertOutputMode,
+    TemperatureWindowLocked,
+    CriticalTemperatureLocked,
+    ShutdownModeEnabled,
 }
 
 #[derive(Debug)]
 pub struct ConfigurationBuilder {
+    initial_configuration: Configuration,
     configuration: Configuration,
 }
 
 impl ConfigurationBuilder {
     pub fn new(configuration: Configuration) -> Self {
-        ConfigurationBuilder { configuration }
+        ConfigurationBuilder {
+            initial_configuration: configuration.clone(),
+            configuration,
+        }
     }
 
     pub fn set_hysteresis(&mut self, hysteresis: Hysteresis) {
@@ -147,12 +141,18 @@ impl ConfigurationBuilder {
         self.configuration.shutdown_mode = shutdown_mode;
     }
 
-    pub fn set_critical_temperature_lock(&mut self, critical_temperature_lock: CriticalTemperatureLock) {
+    pub fn set_critical_temperature_lock(
+        &mut self,
+        critical_temperature_lock: CriticalTemperatureLock,
+    ) {
         self.configuration.critical_temperature_lock = critical_temperature_lock;
     }
 
-    pub fn set_upper_lower_temperature_window_lock(&mut self, upper_lower_temperature_window_lock: UpperLowerTemperatureWindowLock) {
-        self.configuration.upper_lower_temperature_window_lock = upper_lower_temperature_window_lock;
+    pub fn set_upper_lower_temperature_window_lock(
+        &mut self,
+        upper_lower_temperature_window_lock: TemperatureWindowLock,
+    ) {
+        self.configuration.temperature_window_lock = upper_lower_temperature_window_lock;
     }
 
     pub fn set_interrupt_clear(&mut self, interrupt_clear: InterruptClear) {
@@ -180,7 +180,60 @@ impl ConfigurationBuilder {
     }
 
     pub fn build(self) -> Result<Configuration, InvalidConfigurationError> {
-        Ok(self.configuration)
+        let temp_window_locked =
+            self.configuration.temperature_window_lock == TemperatureWindowLock::Locked;
+        let crit_temp_locked =
+            self.configuration.critical_temperature_lock == CriticalTemperatureLock::Locked;
+
+        let shutdown_mode_enabled = self.configuration.shutdown_mode == ShutdownMode::Shutdown;
+
+        let hysteresis_altered =
+            self.configuration.hysteresis == self.initial_configuration.hysteresis;
+        let alert_status_altered = self.configuration.alert_output_status
+            == self.initial_configuration.alert_output_status;
+        let alert_control_altered = self.configuration.alert_output_control
+            == self.initial_configuration.alert_output_control;
+        let alert_select_altered = self.configuration.alert_output_select
+            == self.initial_configuration.alert_output_select;
+        let alert_polarity_altered = self.configuration.alert_output_polarity
+            == self.initial_configuration.alert_output_polarity;
+        let alert_mode_altered =
+            self.configuration.alert_output_mode == self.initial_configuration.alert_output_mode;
+
+        let temp_window_cleared = self.configuration.temperature_window_lock
+            == TemperatureWindowLock::Unlocked
+            && self.initial_configuration.temperature_window_lock == TemperatureWindowLock::Locked;
+        let crit_temp_cleared = self.configuration.critical_temperature_lock
+            == CriticalTemperatureLock::Unlocked
+            && self.initial_configuration.critical_temperature_lock
+                == CriticalTemperatureLock::Locked;
+        let interrupt_cleared = self.configuration.interrupt_clear == InterruptClear::Cleared
+            && self.initial_configuration.interrupt_clear == InterruptClear::NotEffect;
+
+        if temp_window_locked
+            && (hysteresis_altered
+                || alert_select_altered
+                || alert_mode_altered
+                || alert_polarity_altered
+                || alert_control_altered
+                || shutdown_mode_enabled
+                || temp_window_cleared)
+        {
+            Err(InvalidConfigurationError::TemperatureWindowLocked)
+        } else if crit_temp_locked
+            && (hysteresis_altered
+                || alert_mode_altered
+                || alert_polarity_altered
+                || alert_control_altered
+                || shutdown_mode_enabled
+                || crit_temp_cleared)
+        {
+            Err(InvalidConfigurationError::CriticalTemperatureLocked)
+        } else if shutdown_mode_enabled && (alert_status_altered || interrupt_cleared) {
+            Err(InvalidConfigurationError::ShutdownModeEnabled)
+        } else {
+            Ok(self.configuration)
+        }
     }
 }
 
