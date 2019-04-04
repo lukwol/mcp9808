@@ -114,7 +114,8 @@ macro_rules! impl_write_temperature_register {
                 I2C: i2c::Write<Error = Err>,
                 Unit: Into<[u8; 2]>,
             {
-                self.i2c_interface.write_register(&self.$register, temperature)
+                self.i2c_interface
+                    .write_register(&self.$register, temperature)
             }
         }
     };
@@ -132,5 +133,9 @@ impl_write_temperature_register!(upper_temperature_register, write_upper_tempera
 impl_read_temperature_register!(lower_temperature_register, read_lower_temperature, Unit);
 impl_write_temperature_register!(lower_temperature_register, write_lower_temperature);
 
-impl_read_temperature_register!(critical_temperature_register, read_critical_temperature, Unit);
+impl_read_temperature_register!(
+    critical_temperature_register,
+    read_critical_temperature,
+    Unit
+);
 impl_write_temperature_register!(critical_temperature_register, write_critical_temperature);

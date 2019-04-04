@@ -1,15 +1,15 @@
 #![no_std]
 
+use crate::hal::blocking::i2c;
 use address::Address;
 use embedded_hal as hal;
-use crate::hal::blocking::i2c;
 use i2c_reg::*;
 use i2c_reg_derive::*;
 
 // TODO: Change to private use
 pub mod address;
 pub mod configuration;
-pub mod device_information;
+pub mod device_id_revision;
 pub mod manufacturer_id;
 pub mod resolution;
 pub mod temperature;
@@ -80,7 +80,7 @@ impl<I2C> MCP9808<I2C> {
             critical_temperature_register: CriticalTemperatureRegister,
             ambient_temperature_register: AmbientTemperatureRegister,
             device_information_register: DeviceInformationRegister,
-            resolution_register: ResolutionRegister
+            resolution_register: ResolutionRegister,
         }
     }
 }

@@ -4,7 +4,6 @@ use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
 #[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
-#[repr(u8)]
 pub enum Resolution {
     Deg0_5C = 0b00,
     Deg0_25C = 0b01,
@@ -29,8 +28,7 @@ impl<I2C> MCP9808<I2C> {
     where
         I2C: i2c::WriteRead<Error = Err>,
     {
-        self.i2c_interface
-            .read_register(&self.resolution_register)
+        self.i2c_interface.read_register(&self.resolution_register)
     }
 
     pub fn write_resolution<Err>(&mut self, resolution: Resolution) -> Result<(), Err>

@@ -1,35 +1,9 @@
 use crate::hal::blocking::i2c;
 use crate::MCP9808;
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 
-macro_rules! config_bits {
-    ($name: ident, $off: ident, $on: ident, $bit: expr) => {
-        #[derive(Debug, PartialEq, Clone, Copy)]
-        #[repr(u8)]
-        enum $name {
-            $off = 0,
-            $on = 1,
-        }
-
-        impl From<$name> for u8 {
-            fn from(config: $name) -> u8 {
-                (config as u8) << $bit
-            }
-        }
-
-        impl From<u8> for $name {
-            fn from(raw: u8) -> Self {
-                match raw >> $bit {
-                    0 => $name::$off,
-                    1 => $name::$on,
-                    _ => panic!("impossible happened"),
-                }
-            }
-        }
-    };
-}
-
-#[derive(Debug, PartialEq, Clone, Copy)]
-#[repr(u8)]
+#[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
 enum Hysteresis {
     Deg0C = 0b00,
     Deg1_5C = 0b01,
@@ -37,52 +11,136 @@ enum Hysteresis {
     Deg6_0C = 0b11,
 }
 
-impl From<Hysteresis> for u8 {
-    fn from(config: Hysteresis) -> Self {
-        (config as u8) << 2
-    }
+#[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
+enum ShutdownMode {
+    ContinuousConversion = 0,
+    Shutdown = 1,
 }
 
-impl From<u8> for Hysteresis {
-    fn from(raw: u8) -> Self {
-        match raw >> 2 & 0b11 {
-            0b00 => Hysteresis::Deg0C,
-            0b01 => Hysteresis::Deg1_5C,
-            0b10 => Hysteresis::Deg3_0C,
-            0b11 => Hysteresis::Deg6_0C,
-            _ => panic!("impossible happened"),
+#[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
+enum CriticalTemperatureLock {
+    Unlocked,
+    Locked,
+}
+
+#[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
+enum UpperLowerTemperatureWindowLock {
+    Unlocked = 0,
+    Locked = 1,
+}
+
+#[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
+enum InterruptClear {
+    NotEffect = 0,
+    Cleared = 1,
+}
+
+#[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
+enum AlertOutputStatus {
+    NotAsserted = 0,
+    Asserted = 1,
+}
+
+#[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
+enum AlertOutputControl {
+    Disabled = 0,
+    Enabled = 1,
+}
+
+#[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
+enum AlertOutputSelect {
+    UpperLowerCritical = 0,
+    CriticalOnly = 1,
+}
+
+#[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
+enum AlertOutputPolarity {
+    ActiveLow = 0,
+    ActiveHigh = 1,
+}
+#[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
+enum AlertOutputMode {
+    Comparator = 0,
+    Interrupt = 1,
+}
+
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub struct Configuration {
+    hysteresis: Hysteresis,
+    shutdown_mode: ShutdownMode,
+    critical_temperature_lock: CriticalTemperatureLock,
+    upper_lower_temperature_window_lock: UpperLowerTemperatureWindowLock,
+    interrupt_clear: InterruptClear,
+    alert_output_status: AlertOutputStatus,
+    alert_output_control: AlertOutputControl,
+    alert_output_select: AlertOutputSelect,
+    alert_output_polarity: AlertOutputPolarity,
+    alert_output_mode: AlertOutputMode,
+}
+
+impl From<[u8; 2]> for Configuration {
+    fn from(raw: [u8; 2]) -> Self {
+        let (msb, lsb) = (raw[0], raw[1]);
+        Configuration {
+            hysteresis: Hysteresis::from_u8(msb & 0b11 << 1).unwrap(),
+            shutdown_mode: ShutdownMode::from_u8(msb & 1).unwrap(),
+            critical_temperature_lock: CriticalTemperatureLock::from_u8(lsb & 1 << 7).unwrap(),
+            upper_lower_temperature_window_lock: UpperLowerTemperatureWindowLock::from_u8(
+                lsb & 1 << 6,
+            )
+            .unwrap(),
+            interrupt_clear: InterruptClear::from_u8(lsb & 1 << 5).unwrap(),
+            alert_output_status: AlertOutputStatus::from_u8(lsb & 1 << 3).unwrap(),
+            alert_output_control: AlertOutputControl::from_u8(lsb & 1 << 3).unwrap(),
+            alert_output_select: AlertOutputSelect::from_u8(lsb & 1 << 2).unwrap(),
+            alert_output_polarity: AlertOutputPolarity::from_u8(lsb & 1 << 1).unwrap(),
+            alert_output_mode: AlertOutputMode::from_u8(lsb & 1).unwrap(),
         }
     }
 }
 
-config_bits!(Mode, ContinuousConversion, Shutdown, 1);
-
-config_bits!(CriticalTemperature, Unlocked, Locked, 7);
-config_bits!(UpperLowerTemperature, Unlocked, Locked, 6);
-config_bits!(InterruptOutput, NotCleared, Cleared, 5);
-config_bits!(AlertOutputStatus, NotAsserted, Asserted, 4);
-config_bits!(AlertOutputControl, Disabled, Enabled, 3);
-config_bits!(AlertOutputSelect, UpperLowerCritical, CriticalOnly, 2);
-config_bits!(AlertOutputPolarity, ActiveLow, ActiveHigh, 1);
-config_bits!(AlertOutputMode, Comparator, Interrupt, 0);
-
-#[derive(Debug, PartialEq, Clone, Copy)]
-pub struct Configuration {
-    // TODO: Add configuration fields
-}
-
-impl From<[u8; 2]> for Configuration {
-    fn from(_raw: [u8; 2]) -> Self {
-        // TODO: Implement conversion from raw data
-
-        Configuration {}
+impl From<Configuration> for [u8; 2] {
+    fn from(config: Configuration) -> Self {
+        let (mut msb, mut lsb) = (0, 0);
+        msb += config.hysteresis as u8 + config.shutdown_mode as u8;
+        lsb += config.critical_temperature_lock as u8
+            + config.upper_lower_temperature_window_lock as u8
+            + config.interrupt_clear as u8
+            + config.alert_output_status as u8
+            + config.alert_output_control as u8
+            + config.alert_output_select as u8
+            + config.alert_output_polarity as u8
+            + config.alert_output_mode as u8;
+        [msb, lsb]
     }
 }
 
-impl From<Configuration> for [u8; 2] {
-    fn from(_res: Configuration) -> Self {
-        // TODO: Implement conversion to raw data
-        [0; 2]
+#[derive(Debug)]
+pub enum InvalidConfigurationError {
+    Hysteresis,
+    ShutdownMode,
+    CriticalTemperatureLock,
+    UpperLowerTemperatureWindowLock,
+    InterruptClear,
+    AlertOutputStatus,
+    AlertOutputControl,
+    AlertOutputSelect,
+    AlertOutputPolarity,
+    AlertOutputMode,
+}
+
+#[derive(Debug)]
+pub struct ConfigurationBuilder {
+    configuration: Configuration,
+}
+
+impl ConfigurationBuilder {
+    pub fn new(configuration: Configuration) -> Self {
+        ConfigurationBuilder { configuration }
+    }
+
+    pub fn build(self) -> Result<Configuration, InvalidConfigurationError> {
+        Ok(self.configuration)
     }
 }
 
@@ -91,7 +149,8 @@ impl<I2C> MCP9808<I2C> {
     where
         I2C: i2c::WriteRead<Error = Err>,
     {
-        self.i2c_interface.read_register(&self.configuration_register)
+        self.i2c_interface
+            .read_register(&self.configuration_register)
     }
 
     pub fn write_configuration<Err>(&mut self, resolution: Configuration) -> Result<(), Err>

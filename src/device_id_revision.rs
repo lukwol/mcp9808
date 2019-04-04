@@ -10,7 +10,7 @@ pub struct DeviceId(pub u8);
 pub struct DeviceRevision(pub u8);
 
 #[derive(Debug, PartialEq, PartialOrd, Copy, Clone)]
-pub struct DeviceInformation {
+pub struct DeviceIdRevision {
     pub device_id: DeviceId,
     pub device_revision: DeviceRevision,
 }
@@ -21,10 +21,10 @@ impl DeviceId {
     }
 }
 
-impl From<[u8; 2]> for DeviceInformation {
+impl From<[u8; 2]> for DeviceIdRevision {
     fn from(raw: [u8; 2]) -> Self {
         let (msb, lsb) = (raw[0], raw[1]);
-        DeviceInformation {
+        DeviceIdRevision {
             device_id: DeviceId(msb),
             device_revision: DeviceRevision(lsb),
         }
@@ -32,10 +32,11 @@ impl From<[u8; 2]> for DeviceInformation {
 }
 
 impl<I2C> MCP9808<I2C> {
-    pub fn read_device_information<Err>(&mut self) -> Result<DeviceInformation, Err>
+    pub fn read_device_information<Err>(&mut self) -> Result<DeviceIdRevision, Err>
     where
         I2C: i2c::WriteRead<Error = Err>,
     {
-        self.i2c_interface.read_register(&self.device_information_register)
+        self.i2c_interface
+            .read_register(&self.device_information_register)
     }
 }
