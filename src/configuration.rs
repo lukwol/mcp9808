@@ -4,7 +4,7 @@ use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
 #[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
-enum Hysteresis {
+pub enum Hysteresis {
     Deg0C = 0b00,
     Deg1_5C = 0b01,
     Deg3_0C = 0b10,
@@ -12,54 +12,54 @@ enum Hysteresis {
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
-enum ShutdownMode {
+pub enum ShutdownMode {
     ContinuousConversion = 0,
     Shutdown = 1,
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
-enum CriticalTemperatureLock {
+pub enum CriticalTemperatureLock {
     Unlocked,
     Locked,
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
-enum UpperLowerTemperatureWindowLock {
+pub enum UpperLowerTemperatureWindowLock {
     Unlocked = 0,
     Locked = 1,
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
-enum InterruptClear {
+pub enum InterruptClear {
     NotEffect = 0,
     Cleared = 1,
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
-enum AlertOutputStatus {
+pub enum AlertOutputStatus {
     NotAsserted = 0,
     Asserted = 1,
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
-enum AlertOutputControl {
+pub enum AlertOutputControl {
     Disabled = 0,
     Enabled = 1,
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
-enum AlertOutputSelect {
+pub enum AlertOutputSelect {
     UpperLowerCritical = 0,
     CriticalOnly = 1,
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
-enum AlertOutputPolarity {
+pub enum AlertOutputPolarity {
     ActiveLow = 0,
     ActiveHigh = 1,
 }
 #[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
-enum AlertOutputMode {
+pub enum AlertOutputMode {
     Comparator = 0,
     Interrupt = 1,
 }
@@ -137,6 +137,46 @@ pub struct ConfigurationBuilder {
 impl ConfigurationBuilder {
     pub fn new(configuration: Configuration) -> Self {
         ConfigurationBuilder { configuration }
+    }
+
+    pub fn set_hysteresis(&mut self, hysteresis: Hysteresis) {
+        self.configuration.hysteresis = hysteresis;
+    }
+
+    pub fn set_shutdown_mode(&mut self, shutdown_mode: ShutdownMode) {
+        self.configuration.shutdown_mode = shutdown_mode;
+    }
+
+    pub fn set_critical_temperature_lock(&mut self, critical_temperature_lock: CriticalTemperatureLock) {
+        self.configuration.critical_temperature_lock = critical_temperature_lock;
+    }
+
+    pub fn set_upper_lower_temperature_window_lock(&mut self, upper_lower_temperature_window_lock: UpperLowerTemperatureWindowLock) {
+        self.configuration.upper_lower_temperature_window_lock = upper_lower_temperature_window_lock;
+    }
+
+    pub fn set_interrupt_clear(&mut self, interrupt_clear: InterruptClear) {
+        self.configuration.interrupt_clear = interrupt_clear;
+    }
+
+    pub fn set_alert_output_status(&mut self, alert_output_status: AlertOutputStatus) {
+        self.configuration.alert_output_status = alert_output_status;
+    }
+
+    pub fn set_alert_output_control(&mut self, alert_output_control: AlertOutputControl) {
+        self.configuration.alert_output_control = alert_output_control;
+    }
+
+    pub fn set_alert_output_select(&mut self, alert_output_select: AlertOutputSelect) {
+        self.configuration.alert_output_select = alert_output_select;
+    }
+
+    pub fn set_alert_output_polarity(&mut self, alert_output_polarity: AlertOutputPolarity) {
+        self.configuration.alert_output_polarity = alert_output_polarity;
+    }
+
+    pub fn set_alert_output_mode(&mut self, alert_output_mode: AlertOutputMode) {
+        self.configuration.alert_output_mode = alert_output_mode;
     }
 
     pub fn build(self) -> Result<Configuration, InvalidConfigurationError> {
