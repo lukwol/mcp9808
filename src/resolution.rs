@@ -2,8 +2,8 @@ use crate::hal::blocking::i2c;
 use crate::MCP9808;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
-
 use i2c_reg::*;
+use i2c_reg_derive::*;
 
 #[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
 #[repr(u8)]
@@ -20,25 +20,19 @@ impl From<Resolution> for [u8; 1] {
     }
 }
 
-i2c_rw_reg!(ResolutionRegister, addr: 0b1000, len: 1);
-
-pub enum ReadResolutionError<Err> {
-    I2c(Err),
-    InvalidReadingData([u8; 1]),
-}
+#[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
+#[addr = 0b1000]
+#[len = 1]
+struct ResolutionRegister;
 
 impl<I2C> MCP9808<I2C> {
-    pub fn read_resolution<Err>(&mut self) -> Result<Resolution, ReadResolutionError<Err>>
+    pub fn read_resolution<Err>(&mut self) -> Result<Resolution, Err>
     where
         I2C: i2c::WriteRead<Error = Err>,
     {
         self.i2c_interface
             .read_register(ResolutionRegister)
-            .map_err(ReadResolutionError::I2c)
-            .and_then(|raw: [u8; 1]| {
-                Resolution::from_u8(raw[0] & 0b11)
-                    .ok_or(ReadResolutionError::InvalidReadingData(raw))
-            })
+            .map(|raw: [u8; 1]| Resolution::from_u8(raw[0] & 0b11).unwrap())
     }
 
     pub fn write_resolution<Err>(&mut self, resolution: Resolution) -> Result<(), Err>

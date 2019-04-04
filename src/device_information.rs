@@ -1,6 +1,7 @@
 use crate::MCP9808;
 use embedded_hal::blocking::i2c;
 use i2c_reg::*;
+use i2c_reg_derive::*;
 
 const VALID_DEVICE_ID: u8 = 0x04;
 
@@ -32,7 +33,10 @@ impl From<[u8; 2]> for DeviceInformation {
     }
 }
 
-i2c_ro_reg!(DeviceInformationRegister, addr: 0b0111, len: 2);
+#[derive(Debug, Register, I2cReadRegister)]
+#[addr = 0b0111]
+#[len = 2]
+struct DeviceInformationRegister;
 
 impl<I2C> MCP9808<I2C> {
     pub fn read_device_information<Err>(&mut self) -> Result<DeviceInformation, Err>

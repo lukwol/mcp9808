@@ -2,7 +2,7 @@
 
 use address::Address;
 use embedded_hal as hal;
-use i2c_reg::I2cInterface;
+use i2c_reg::*;
 
 // TODO: Change to private use
 pub mod address;
