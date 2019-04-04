@@ -1,9 +1,6 @@
 use crate::hal::blocking::i2c;
 use crate::MCP9808;
 
-use i2c_reg::*;
-use i2c_reg_derive::*;
-
 macro_rules! config_bits {
     ($name: ident, $off: ident, $on: ident, $bit: expr) => {
         #[derive(Debug, PartialEq, Clone, Copy)]
@@ -89,17 +86,12 @@ impl From<Configuration> for [u8; 2] {
     }
 }
 
-#[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
-#[addr = 0b0001]
-#[len = 2]
-struct ConfigurationRegister;
-
 impl<I2C> MCP9808<I2C> {
     pub fn read_configuration<Err>(&mut self) -> Result<Configuration, Err>
     where
         I2C: i2c::WriteRead<Error = Err>,
     {
-        self.i2c_interface.read_register(&ConfigurationRegister)
+        self.i2c_interface.read_register(&self.configuration_register)
     }
 
     pub fn write_configuration<Err>(&mut self, resolution: Configuration) -> Result<(), Err>
@@ -107,6 +99,6 @@ impl<I2C> MCP9808<I2C> {
         I2C: i2c::Write<Error = Err>,
     {
         self.i2c_interface
-            .write_register(&ConfigurationRegister, resolution)
+            .write_register(&self.configuration_register, resolution)
     }
 }

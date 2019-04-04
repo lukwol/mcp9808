@@ -1,9 +1,6 @@
 use crate::hal::blocking::i2c;
 use crate::MCP9808;
 
-use i2c_reg::*;
-use i2c_reg_derive::*;
-
 const ALERT_CRITICAL_BIT: u8 = 1 << 7;
 const ALERT_UPPER_BIT: u8 = 1 << 6;
 const ALERT_LOWER_BIT: u8 = 1 << 5;
@@ -96,64 +93,44 @@ where
 }
 
 macro_rules! impl_read_temperature_register {
-    ($register: expr, $function_name: ident, $type: ty) => {
+    ($register: ident, $function_name: ident, $type: ty) => {
         impl<I2C> MCP9808<I2C> {
             pub fn $function_name<Unit, Err>(&mut self) -> Result<$type, Err>
             where
                 I2C: i2c::WriteRead<Error = Err>,
                 Unit: From<[u8; 2]>,
             {
-                self.i2c_interface.read_register(&$register)
+                self.i2c_interface.read_register(&self.$register)
             }
         }
     };
 }
 
 macro_rules! impl_write_temperature_register {
-    ($register: expr, $function_name: ident) => {
+    ($register: ident, $function_name: ident) => {
         impl<I2C> MCP9808<I2C> {
             pub fn $function_name<Unit, Err>(&mut self, temperature: Unit) -> Result<(), Err>
             where
                 I2C: i2c::Write<Error = Err>,
                 Unit: Into<[u8; 2]>,
             {
-                self.i2c_interface.write_register(&$register, temperature)
+                self.i2c_interface.write_register(&self.$register, temperature)
             }
         }
     };
 }
 
-#[derive(Debug, Register, I2cReadRegister)]
-#[addr = 0b0101]
-#[len = 2]
-struct AmbientTemperatureRegister;
-
 impl_read_temperature_register!(
-    AmbientTemperatureRegister,
+    ambient_temperature_register,
     read_ambient_temperature,
     TemperatureMeasurement<Unit>
 );
 
-#[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
-#[addr = 0b0010]
-#[len = 2]
-struct UpperTemperatureRegister;
+impl_read_temperature_register!(upper_temperature_register, read_upper_temperature, Unit);
+impl_write_temperature_register!(upper_temperature_register, write_upper_temperature);
 
-impl_read_temperature_register!(UpperTemperatureRegister, read_upper_temperature, Unit);
-impl_write_temperature_register!(UpperTemperatureRegister, write_upper_temperature);
+impl_read_temperature_register!(lower_temperature_register, read_lower_temperature, Unit);
+impl_write_temperature_register!(lower_temperature_register, write_lower_temperature);
 
-#[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
-#[addr = 0b0011]
-#[len = 2]
-struct LowerTemperatureRegister;
-
-impl_read_temperature_register!(LowerTemperatureRegister, read_lower_temperature, Unit);
-impl_write_temperature_register!(LowerTemperatureRegister, write_lower_temperature);
-
-#[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
-#[addr = 0b0100]
-#[len = 2]
-struct CriticalTemperatureRegister;
-
-impl_read_temperature_register!(CriticalTemperatureRegister, read_critical_temperature, Unit);
-impl_write_temperature_register!(CriticalTemperatureRegister, write_critical_temperature);
+impl_read_temperature_register!(critical_temperature_register, read_critical_temperature, Unit);
+impl_write_temperature_register!(critical_temperature_register, write_critical_temperature);

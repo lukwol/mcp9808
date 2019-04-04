@@ -1,7 +1,5 @@
 use crate::MCP9808;
 use embedded_hal::blocking::i2c;
-use i2c_reg::*;
-use i2c_reg_derive::*;
 
 const VALID_MANUFACTURER_ID: u16 = 0x0054;
 
@@ -20,11 +18,6 @@ impl From<[u8; 2]> for ManufacturerId {
         ManufacturerId(((u16::from(msb)) << 8) + u16::from(lsb))
     }
 }
-
-#[derive(Debug, Register, I2cReadRegister)]
-#[addr = 0b0110]
-#[len = 2]
-pub(crate) struct ManufacturerIdRegister;
 
 impl<I2C> MCP9808<I2C> {
     pub fn read_manufacturer_id<Err>(&mut self) -> Result<ManufacturerId, Err>
