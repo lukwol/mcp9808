@@ -1,3 +1,5 @@
+#![allow(clippy::useless_attribute)]
+
 use crate::hal::blocking::i2c;
 use crate::MCP9808;
 use num_derive::FromPrimitive;
