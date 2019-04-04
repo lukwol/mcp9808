@@ -5,7 +5,6 @@ use num_traits::FromPrimitive;
 
 #[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
 #[repr(u8)]
-#[allow(clippy::enum_variant_names)]
 pub enum Resolution {
     Deg0_5C = 0b00,
     Deg0_25C = 0b01,
@@ -19,6 +18,12 @@ impl From<Resolution> for [u8; 1] {
     }
 }
 
+impl From<[u8; 1]> for Resolution {
+    fn from(raw: [u8; 1]) -> Self {
+        Resolution::from_u8(raw[0] & 0b11).unwrap()
+    }
+}
+
 impl<I2C> MCP9808<I2C> {
     pub fn read_resolution<Err>(&mut self) -> Result<Resolution, Err>
     where
@@ -26,7 +31,6 @@ impl<I2C> MCP9808<I2C> {
     {
         self.i2c_interface
             .read_register(&self.resolution_register)
-            .map(|raw: [u8; 1]| Resolution::from_u8(raw[0] & 0b11).unwrap())
     }
 
     pub fn write_resolution<Err>(&mut self, resolution: Resolution) -> Result<(), Err>
