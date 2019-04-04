@@ -1,9 +1,9 @@
 use crate::hal::blocking::i2c;
 use crate::MCP9808;
-use num_derive::FromPrimitive;
-use num_traits::FromPrimitive;
 use i2c_reg::*;
 use i2c_reg_derive::*;
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 
 #[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
 #[repr(u8)]
@@ -31,7 +31,7 @@ impl<I2C> MCP9808<I2C> {
         I2C: i2c::WriteRead<Error = Err>,
     {
         self.i2c_interface
-            .read_register(ResolutionRegister)
+            .read_register(&ResolutionRegister)
             .map(|raw: [u8; 1]| Resolution::from_u8(raw[0] & 0b11).unwrap())
     }
 
@@ -40,6 +40,6 @@ impl<I2C> MCP9808<I2C> {
         I2C: i2c::Write<Error = Err>,
     {
         self.i2c_interface
-            .write_register(ResolutionRegister, resolution)
+            .write_register(&ResolutionRegister, resolution)
     }
 }

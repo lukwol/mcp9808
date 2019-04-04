@@ -103,7 +103,7 @@ macro_rules! impl_read_temperature_register {
                 I2C: i2c::WriteRead<Error = Err>,
                 Unit: From<[u8; 2]>,
             {
-                self.i2c_interface.read_register($register)
+                self.i2c_interface.read_register(&$register)
             }
         }
     };
@@ -117,7 +117,7 @@ macro_rules! impl_write_temperature_register {
                 I2C: i2c::Write<Error = Err>,
                 Unit: Into<[u8; 2]>,
             {
-                self.i2c_interface.write_register($register, temperature)
+                self.i2c_interface.write_register(&$register, temperature)
             }
         }
     };

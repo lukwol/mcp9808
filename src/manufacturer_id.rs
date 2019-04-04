@@ -24,13 +24,14 @@ impl From<[u8; 2]> for ManufacturerId {
 #[derive(Debug, Register, I2cReadRegister)]
 #[addr = 0b0110]
 #[len = 2]
-struct ManufacturerIdRegister;
+pub(crate) struct ManufacturerIdRegister;
 
 impl<I2C> MCP9808<I2C> {
     pub fn read_manufacturer_id<Err>(&mut self) -> Result<ManufacturerId, Err>
     where
         I2C: i2c::WriteRead<Error = Err>,
     {
-        self.i2c_interface.read_register(ManufacturerIdRegister)
+        self.i2c_interface
+            .read_register(&self.manufacturer_id_register)
     }
 }

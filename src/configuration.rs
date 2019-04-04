@@ -99,7 +99,7 @@ impl<I2C> MCP9808<I2C> {
     where
         I2C: i2c::WriteRead<Error = Err>,
     {
-        self.i2c_interface.read_register(ConfigurationRegister)
+        self.i2c_interface.read_register(&ConfigurationRegister)
     }
 
     pub fn write_configuration<Err>(&mut self, resolution: Configuration) -> Result<(), Err>
@@ -107,6 +107,6 @@ impl<I2C> MCP9808<I2C> {
         I2C: i2c::Write<Error = Err>,
     {
         self.i2c_interface
-            .write_register(ConfigurationRegister, resolution)
+            .write_register(&ConfigurationRegister, resolution)
     }
 }

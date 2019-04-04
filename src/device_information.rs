@@ -43,6 +43,6 @@ impl<I2C> MCP9808<I2C> {
     where
         I2C: i2c::WriteRead<Error = Err>,
     {
-        self.i2c_interface.read_register(DeviceInformationRegister)
+        self.i2c_interface.read_register(&DeviceInformationRegister)
     }
 }
