@@ -5,7 +5,6 @@ use address::Address;
 use embedded_hal as hal;
 use i2c_reg::I2cInterface;
 
-// TODO: Change to private use?
 pub mod address;
 pub mod configuration;
 pub mod device_id_revision;
