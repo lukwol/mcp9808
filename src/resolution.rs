@@ -1,7 +1,6 @@
 #![allow(clippy::useless_attribute)]
 
-use crate::hal::blocking::i2c;
-use crate::{ResolutionRegister, MCP9808};
+use crate::{hal::blocking::i2c, ResolutionRegister, MCP9808};
 use i2c_reg::Register;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;

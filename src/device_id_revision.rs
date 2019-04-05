@@ -1,5 +1,4 @@
-use crate::{MCP9808, DeviceIdRevisionRegister};
-use embedded_hal::blocking::i2c;
+use crate::{hal::blocking::i2c, DeviceIdRevisionRegister, MCP9808};
 use i2c_reg::Register;
 
 const VALID_DEVICE_ID: u8 = 0x04;

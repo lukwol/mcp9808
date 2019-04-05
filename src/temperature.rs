@@ -1,5 +1,4 @@
-use crate::hal::blocking::i2c;
-use crate::{MCP9808, AmbientTemperatureRegister};
+use crate::{hal::blocking::i2c, AmbientTemperatureRegister, MCP9808};
 use i2c_reg::Register;
 
 const ALERT_CRITICAL_BIT: u8 = 1 << 7;
@@ -96,6 +95,9 @@ where
 }
 
 macro_rules! impl_read_temperature_register {
+    ($register: ident, $function_name: ident) => {
+        impl_read_temperature_register!($register, $function_name, Unit);
+    };
     ($register: ident, $function_name: ident, $type: ty) => {
         impl<I2C> MCP9808<I2C> {
             pub fn $function_name<Unit, Err>(&mut self) -> Result<$type, Err>
@@ -130,15 +132,11 @@ impl_read_temperature_register!(
     TemperatureMeasurement<Unit>
 );
 
-impl_read_temperature_register!(upper_temperature_register, read_upper_temperature, Unit);
+impl_read_temperature_register!(upper_temperature_register, read_upper_temperature);
 impl_write_temperature_register!(upper_temperature_register, write_upper_temperature);
 
-impl_read_temperature_register!(lower_temperature_register, read_lower_temperature, Unit);
+impl_read_temperature_register!(lower_temperature_register, read_lower_temperature);
 impl_write_temperature_register!(lower_temperature_register, write_lower_temperature);
 
-impl_read_temperature_register!(
-    critical_temperature_register,
-    read_critical_temperature,
-    Unit
-);
+impl_read_temperature_register!(critical_temperature_register, read_critical_temperature);
 impl_write_temperature_register!(critical_temperature_register, write_critical_temperature);

@@ -1,5 +1,4 @@
-use crate::{MCP9808, ManufacturerIdRegister};
-use embedded_hal::blocking::i2c;
+use crate::{hal::blocking::i2c, ManufacturerIdRegister, MCP9808};
 use i2c_reg::Register;
 
 const VALID_MANUFACTURER_ID: u16 = 0x0054;

@@ -1,12 +1,11 @@
 #![no_std]
 
-use crate::hal::blocking::i2c;
+use crate::registers::*;
 use address::Address;
 use embedded_hal as hal;
-use i2c_reg::*;
-use i2c_reg_derive::*;
+use i2c_reg::I2cInterface;
 
-// TODO: Change to private use
+// TODO: Change to private use?
 pub mod address;
 pub mod configuration;
 pub mod device_id_revision;
@@ -14,45 +13,7 @@ pub mod manufacturer_id;
 pub mod resolution;
 pub mod temperature;
 
-#[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
-#[addr = 0b0001]
-#[len = 2]
-pub struct ConfigurationRegister;
-
-#[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
-#[addr = 0b0010]
-#[len = 2]
-pub struct UpperTemperatureRegister;
-
-#[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
-#[addr = 0b0011]
-#[len = 2]
-pub struct LowerTemperatureRegister;
-
-#[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
-#[addr = 0b0100]
-#[len = 2]
-pub struct CriticalTemperatureRegister;
-
-#[derive(Debug, Register, I2cReadRegister)]
-#[addr = 0b0101]
-#[len = 2]
-pub struct AmbientTemperatureRegister;
-
-#[derive(Debug, Register, I2cReadRegister)]
-#[addr = 0b0110]
-#[len = 2]
-pub struct ManufacturerIdRegister;
-
-#[derive(Debug, Register, I2cReadRegister)]
-#[addr = 0b0111]
-#[len = 2]
-pub struct DeviceIdRevisionRegister;
-
-#[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
-#[addr = 0b1000]
-#[len = 1]
-pub struct ResolutionRegister;
+mod registers;
 
 pub struct MCP9808<I2C> {
     i2c_interface: I2cInterface<I2C>,

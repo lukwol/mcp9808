@@ -1,10 +1,9 @@
 #![allow(clippy::useless_attribute)]
 
-use crate::hal::blocking::i2c;
-use crate::{MCP9808, ConfigurationRegister};
+use crate::{hal::blocking::i2c, ConfigurationRegister, MCP9808};
+use i2c_reg::Register;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
-use i2c_reg::Register;
 
 type Raw = <ConfigurationRegister as Register>::Raw;
 
