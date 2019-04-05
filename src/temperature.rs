@@ -1,16 +1,19 @@
 use crate::hal::blocking::i2c;
-use crate::MCP9808;
+use crate::{MCP9808, AmbientTemperatureRegister};
+use i2c_reg::Register;
 
 const ALERT_CRITICAL_BIT: u8 = 1 << 7;
 const ALERT_UPPER_BIT: u8 = 1 << 6;
 const ALERT_LOWER_BIT: u8 = 1 << 5;
 const TEMPERATURE_SIGN_BIT: u8 = 1 << 4;
 
+type Raw = <AmbientTemperatureRegister as Register>::Raw;
+
 #[derive(Debug, PartialOrd, PartialEq, Copy, Clone)]
 pub struct Millicelsius(pub i32);
 
-impl From<[u8; 2]> for Millicelsius {
-    fn from(raw: [u8; 2]) -> Self {
+impl From<Raw> for Millicelsius {
+    fn from(raw: Raw) -> Self {
         let (msb, lsb) = (raw[0], raw[1]);
 
         let fraction = (0..4).fold(0, |acc, x| acc + i32::from(lsb & 1 << x) * 625) / 10;
@@ -25,9 +28,9 @@ impl From<[u8; 2]> for Millicelsius {
     }
 }
 
-impl From<Millicelsius> for [u8; 2] {
-    fn from(millicelsius: Millicelsius) -> Self {
-        let value = millicelsius.0;
+impl Into<Raw> for Millicelsius {
+    fn into(self) -> Raw {
+        let value = self.0;
         let write_value = (value + 256_000) % 256_000;
 
         let integer = write_value / 1_000;
@@ -57,15 +60,15 @@ impl From<Celsius> for Millicelsius {
     }
 }
 
-impl From<[u8; 2]> for Celsius {
-    fn from(raw: [u8; 2]) -> Self {
+impl From<Raw> for Celsius {
+    fn from(raw: Raw) -> Self {
         Millicelsius::from(raw).into()
     }
 }
 
-impl From<Celsius> for [u8; 2] {
-    fn from(celsius: Celsius) -> Self {
-        Millicelsius::from(celsius).into()
+impl Into<Raw> for Celsius {
+    fn into(self) -> Raw {
+        Millicelsius::from(self).into()
     }
 }
 
@@ -77,11 +80,11 @@ pub struct TemperatureMeasurement<Unit> {
     pub is_lower: bool,
 }
 
-impl<Unit> From<[u8; 2]> for TemperatureMeasurement<Unit>
+impl<Unit> From<Raw> for TemperatureMeasurement<Unit>
 where
-    Unit: From<[u8; 2]>,
+    Unit: From<Raw>,
 {
-    fn from(raw: [u8; 2]) -> Self {
+    fn from(raw: Raw) -> Self {
         let msb = raw[0];
         TemperatureMeasurement {
             temperature: Unit::from(raw),
@@ -98,7 +101,7 @@ macro_rules! impl_read_temperature_register {
             pub fn $function_name<Unit, Err>(&mut self) -> Result<$type, Err>
             where
                 I2C: i2c::WriteRead<Error = Err>,
-                Unit: From<[u8; 2]>,
+                Unit: From<Raw>,
             {
                 self.i2c_interface.read_register(&self.$register)
             }
@@ -112,7 +115,7 @@ macro_rules! impl_write_temperature_register {
             pub fn $function_name<Unit, Err>(&mut self, temperature: Unit) -> Result<(), Err>
             where
                 I2C: i2c::Write<Error = Err>,
-                Unit: Into<[u8; 2]>,
+                Unit: Into<Raw>,
             {
                 self.i2c_interface
                     .write_register(&self.$register, temperature)

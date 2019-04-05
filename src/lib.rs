@@ -47,12 +47,12 @@ pub struct ManufacturerIdRegister;
 #[derive(Debug, Register, I2cReadRegister)]
 #[addr = 0b0111]
 #[len = 2]
-pub struct DeviceInformationRegister;
+pub struct DeviceIdRevisionRegister;
 
 #[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
 #[addr = 0b1000]
 #[len = 1]
-struct ResolutionRegister;
+pub struct ResolutionRegister;
 
 pub struct MCP9808<I2C> {
     i2c_interface: I2cInterface<I2C>,
@@ -62,7 +62,7 @@ pub struct MCP9808<I2C> {
     critical_temperature_register: CriticalTemperatureRegister,
     ambient_temperature_register: AmbientTemperatureRegister,
     manufacturer_id_register: ManufacturerIdRegister,
-    device_information_register: DeviceInformationRegister,
+    device_information_register: DeviceIdRevisionRegister,
     resolution_register: ResolutionRegister,
 }
 
@@ -79,7 +79,7 @@ impl<I2C> MCP9808<I2C> {
             lower_temperature_register: LowerTemperatureRegister,
             critical_temperature_register: CriticalTemperatureRegister,
             ambient_temperature_register: AmbientTemperatureRegister,
-            device_information_register: DeviceInformationRegister,
+            device_information_register: DeviceIdRevisionRegister,
             resolution_register: ResolutionRegister,
         }
     }

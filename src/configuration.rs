@@ -1,9 +1,12 @@
 #![allow(clippy::useless_attribute)]
 
 use crate::hal::blocking::i2c;
-use crate::MCP9808;
+use crate::{MCP9808, ConfigurationRegister};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
+use i2c_reg::Register;
+
+type Raw = <ConfigurationRegister as Register>::Raw;
 
 #[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
 pub enum Hysteresis {
@@ -80,8 +83,8 @@ pub struct Configuration {
     alert_output_mode: AlertOutputMode,
 }
 
-impl From<[u8; 2]> for Configuration {
-    fn from(raw: [u8; 2]) -> Self {
+impl From<Raw> for Configuration {
+    fn from(raw: Raw) -> Self {
         let (msb, lsb) = (raw[0], raw[1]);
         Configuration {
             hysteresis: Hysteresis::from_u8(msb & 0b11 << 1).unwrap(),
@@ -98,18 +101,18 @@ impl From<[u8; 2]> for Configuration {
     }
 }
 
-impl From<Configuration> for [u8; 2] {
-    fn from(config: Configuration) -> Self {
+impl Into<Raw> for Configuration {
+    fn into(self) -> Raw {
         let (mut msb, mut lsb) = (0, 0);
-        msb += config.hysteresis as u8 + config.shutdown_mode as u8;
-        lsb += config.critical_temperature_lock as u8
-            + config.temperature_window_lock as u8
-            + config.interrupt_clear as u8
-            + config.alert_output_status as u8
-            + config.alert_output_control as u8
-            + config.alert_output_select as u8
-            + config.alert_output_polarity as u8
-            + config.alert_output_mode as u8;
+        msb += self.hysteresis as u8 + self.shutdown_mode as u8;
+        lsb += self.critical_temperature_lock as u8
+            + self.temperature_window_lock as u8
+            + self.interrupt_clear as u8
+            + self.alert_output_status as u8
+            + self.alert_output_control as u8
+            + self.alert_output_select as u8
+            + self.alert_output_polarity as u8
+            + self.alert_output_mode as u8;
         [msb, lsb]
     }
 }

@@ -1,7 +1,10 @@
-use crate::MCP9808;
+use crate::{MCP9808, DeviceIdRevisionRegister};
 use embedded_hal::blocking::i2c;
+use i2c_reg::Register;
 
 const VALID_DEVICE_ID: u8 = 0x04;
+
+type Raw = <DeviceIdRevisionRegister as Register>::Raw;
 
 #[derive(Debug, PartialEq, PartialOrd, Copy, Clone)]
 pub struct DeviceId(pub u8);
@@ -21,8 +24,8 @@ impl DeviceId {
     }
 }
 
-impl From<[u8; 2]> for DeviceIdRevision {
-    fn from(raw: [u8; 2]) -> Self {
+impl From<Raw> for DeviceIdRevision {
+    fn from(raw: Raw) -> Self {
         let (msb, lsb) = (raw[0], raw[1]);
         DeviceIdRevision {
             device_id: DeviceId(msb),

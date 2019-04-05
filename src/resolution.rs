@@ -1,9 +1,12 @@
 #![allow(clippy::useless_attribute)]
 
 use crate::hal::blocking::i2c;
-use crate::MCP9808;
+use crate::{ResolutionRegister, MCP9808};
+use i2c_reg::Register;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
+
+type Raw = <ResolutionRegister as Register>::Raw;
 
 #[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
 pub enum Resolution {
@@ -13,15 +16,15 @@ pub enum Resolution {
     Deg0_0625C = 0b11,
 }
 
-impl From<Resolution> for [u8; 1] {
-    fn from(res: Resolution) -> Self {
-        [res as u8]
+impl From<Raw> for Resolution {
+    fn from(raw: Raw) -> Self {
+        Resolution::from_u8(raw[0] & 0b11).unwrap()
     }
 }
 
-impl From<[u8; 1]> for Resolution {
-    fn from(raw: [u8; 1]) -> Self {
-        Resolution::from_u8(raw[0] & 0b11).unwrap()
+impl Into<Raw> for Resolution {
+    fn into(self) -> Raw {
+        [self as u8]
     }
 }
 
