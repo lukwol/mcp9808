@@ -17,37 +17,37 @@ pub mod temperature;
 #[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
 #[addr = 0b0001]
 #[len = 2]
-struct ConfigurationRegister;
+pub struct ConfigurationRegister;
 
 #[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
 #[addr = 0b0010]
 #[len = 2]
-struct UpperTemperatureRegister;
+pub struct UpperTemperatureRegister;
 
 #[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
 #[addr = 0b0011]
 #[len = 2]
-struct LowerTemperatureRegister;
+pub struct LowerTemperatureRegister;
 
 #[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
 #[addr = 0b0100]
 #[len = 2]
-struct CriticalTemperatureRegister;
+pub struct CriticalTemperatureRegister;
 
 #[derive(Debug, Register, I2cReadRegister)]
 #[addr = 0b0101]
 #[len = 2]
-struct AmbientTemperatureRegister;
+pub struct AmbientTemperatureRegister;
 
 #[derive(Debug, Register, I2cReadRegister)]
 #[addr = 0b0110]
 #[len = 2]
-struct ManufacturerIdRegister;
+pub struct ManufacturerIdRegister;
 
 #[derive(Debug, Register, I2cReadRegister)]
 #[addr = 0b0111]
 #[len = 2]
-struct DeviceInformationRegister;
+pub struct DeviceInformationRegister;
 
 #[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
 #[addr = 0b1000]

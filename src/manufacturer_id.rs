@@ -1,7 +1,10 @@
-use crate::MCP9808;
+use crate::{MCP9808, ManufacturerIdRegister};
 use embedded_hal::blocking::i2c;
+use i2c_reg::Register;
 
 const VALID_MANUFACTURER_ID: u16 = 0x0054;
+
+type Raw = <ManufacturerIdRegister as Register>::Raw;
 
 #[derive(Debug, PartialEq, PartialOrd, Copy, Clone)]
 pub struct ManufacturerId(pub u16);
@@ -12,8 +15,8 @@ impl ManufacturerId {
     }
 }
 
-impl From<[u8; 2]> for ManufacturerId {
-    fn from(raw: [u8; 2]) -> Self {
+impl From<Raw> for ManufacturerId {
+    fn from(raw: Raw) -> Self {
         let (msb, lsb) = (raw[0], raw[1]);
         ManufacturerId(((u16::from(msb)) << 8) + u16::from(lsb))
     }
