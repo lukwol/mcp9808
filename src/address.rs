@@ -15,3 +15,10 @@ impl From<Address> for u8 {
         }
     }
 }
+
+impl PartialEq for Address {
+    fn eq(&self, other: &Self) -> bool {
+        let (lhs, rhs): (u8, u8) = ((*self).into(), (*other).into());
+        lhs == rhs
+    }
+}
