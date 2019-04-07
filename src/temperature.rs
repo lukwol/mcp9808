@@ -71,8 +71,16 @@ impl Into<Raw> for Celsius {
     }
 }
 
+pub trait TemperatureUnit {}
+
+impl TemperatureUnit for Millicelsius {}
+impl TemperatureUnit for Celsius {}
+
 #[derive(Debug, PartialOrd, PartialEq, Copy, Clone)]
-pub struct TemperatureMeasurement<Unit> {
+pub struct TemperatureMeasurement<Unit>
+where
+    Unit: TemperatureUnit,
+{
     pub temperature: Unit,
     pub is_critical: bool,
     pub is_upper: bool,
@@ -81,12 +89,12 @@ pub struct TemperatureMeasurement<Unit> {
 
 impl<Unit> From<Raw> for TemperatureMeasurement<Unit>
 where
-    Unit: From<Raw>,
+    Unit: From<Raw> + TemperatureUnit,
 {
     fn from(raw: Raw) -> Self {
         let msb = raw[0];
         TemperatureMeasurement {
-            temperature: Unit::from(raw),
+            temperature: raw.into(),
             is_critical: !msb & ALERT_CRITICAL_BIT == 0,
             is_upper: !msb & ALERT_UPPER_BIT == 0,
             is_lower: !msb & ALERT_LOWER_BIT == 0,
@@ -103,7 +111,7 @@ macro_rules! impl_read_temperature_register {
             pub fn $function_name<Unit, Err>(&mut self) -> Result<$type, Err>
             where
                 I2C: i2c::WriteRead<Error = Err>,
-                Unit: From<Raw>,
+                Unit: From<Raw> + TemperatureUnit,
             {
                 self.i2c_interface.read_register(&self.$register)
             }
@@ -117,7 +125,7 @@ macro_rules! impl_write_temperature_register {
             pub fn $function_name<Unit, Err>(&mut self, temperature: Unit) -> Result<(), Err>
             where
                 I2C: i2c::Write<Error = Err>,
-                Unit: Into<Raw>,
+                Unit: Into<Raw> + TemperatureUnit,
             {
                 self.i2c_interface
                     .write_register(&self.$register, temperature)
