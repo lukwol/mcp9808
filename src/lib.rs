@@ -15,7 +15,7 @@ pub mod temperature;
 mod registers;
 
 pub struct MCP9808<I2C> {
-    pub i2c_interface: I2cInterface<I2C>,
+    i2c_interface: I2cInterface<I2C>,
     configuration_register: ConfigurationRegister,
     upper_temperature_register: UpperTemperatureRegister,
     lower_temperature_register: LowerTemperatureRegister,
@@ -42,5 +42,9 @@ impl<I2C> MCP9808<I2C> {
             device_information_register: DeviceIdRevisionRegister,
             resolution_register: ResolutionRegister,
         }
+    }
+
+    pub fn address(&self) -> u8 {
+        self.i2c_interface.address
     }
 }
