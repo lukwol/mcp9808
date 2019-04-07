@@ -15,7 +15,7 @@ pub mod temperature;
 mod registers;
 
 pub struct MCP9808<I2C> {
-    i2c_interface: I2cInterface<I2C>,
+    pub i2c_interface: I2cInterface<I2C>,
     configuration_register: ConfigurationRegister,
     upper_temperature_register: UpperTemperatureRegister,
     lower_temperature_register: LowerTemperatureRegister,
