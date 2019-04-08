@@ -32,7 +32,7 @@ impl<I2C> MCP9808<I2C> {
     where
         I2C: i2c::WriteRead<Error = Err>,
     {
-        self.i2c_interface.read_register(&self.resolution_register)
+        self.i2c_interface.read_register(ResolutionRegister)
     }
 
     pub fn write_resolution<Err>(&mut self, resolution: Resolution) -> Result<(), Err>
@@ -40,6 +40,6 @@ impl<I2C> MCP9808<I2C> {
         I2C: i2c::Write<Error = Err>,
     {
         self.i2c_interface
-            .write_register(&self.resolution_register, resolution)
+            .write_register(ResolutionRegister, resolution)
     }
 }

@@ -2,7 +2,6 @@ use crate::hal::blocking::i2c;
 use i2c_reg::*;
 use i2c_reg_derive::*;
 
-
 /// Configuration register (CONFIG)
 #[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
 #[addr = 0b0001]

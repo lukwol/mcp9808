@@ -256,15 +256,14 @@ impl<I2C> MCP9808<I2C> {
     where
         I2C: i2c::WriteRead<Error = Err>,
     {
-        self.i2c_interface
-            .read_register(&self.configuration_register)
+        self.i2c_interface.read_register(ConfigurationRegister)
     }
 
-    pub fn write_configuration<Err>(&mut self, resolution: Configuration) -> Result<(), Err>
+    pub fn write_configuration<Err>(&mut self, configuration: Configuration) -> Result<(), Err>
     where
         I2C: i2c::Write<Error = Err>,
     {
         self.i2c_interface
-            .write_register(&self.configuration_register, resolution)
+            .write_register(ConfigurationRegister, configuration)
     }
 }
