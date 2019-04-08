@@ -47,4 +47,8 @@ impl<I2C> MCP9808<I2C> {
     pub fn address(&self) -> u8 {
         self.i2c_interface.address
     }
+
+    pub fn release(self) -> I2C {
+        self.i2c_interface.i2c
+    }
 }
