@@ -1,4 +1,5 @@
 /// I2C device address
+///
 /// # Usage
 ///
 /// ```
