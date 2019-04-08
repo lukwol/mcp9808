@@ -2,17 +2,17 @@
 /// # Usage
 ///
 /// ```
-///# use mcp9808::address::Address;
-///# use mcp9808::MCP9808;
-///# let i2c = ();
+/// # use mcp9808::address::Address;
+/// # use mcp9808::MCP9808;
+/// # let i2c = ();
 /// let mcp9808 = MCP9808::new(i2c, Address::Default);
 /// assert_eq!(0b1_1000u8, mcp9808.address());
 /// ```
 ///
 /// ```
-///# use mcp9808::address::Address;
-///# use mcp9808::MCP9808;
-///# let i2c = ();
+/// # use mcp9808::address::Address;
+/// # use mcp9808::MCP9808;
+/// # let i2c = ();
 /// let mcp9808 = MCP9808::new(i2c, Address::Alternative { a2: true, a1: false, a0: true });
 /// assert_eq!(0b1_1101u8, mcp9808.address());
 /// ```
