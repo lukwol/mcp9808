@@ -1,6 +1,6 @@
 /// I2C device address
 ///
-/// # Usage
+/// # Example
 ///
 /// ```
 /// # use mcp9808::address::Address;
