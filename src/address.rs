@@ -2,6 +2,7 @@
 ///
 /// # Example
 ///
+/// ## Default slave address
 /// ```
 /// use mcp9808::address::Address;
 /// use mcp9808::MCP9808;
@@ -11,6 +12,7 @@
 /// assert_eq!(0b1_1000u8, mcp9808.address());
 /// ```
 ///
+/// ## Alternative slave address
 /// ```
 /// use mcp9808::address::Address;
 /// use mcp9808::MCP9808;
