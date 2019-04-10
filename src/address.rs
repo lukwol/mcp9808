@@ -23,9 +23,11 @@
 /// ```
 #[derive(Debug, Clone, Copy)]
 pub enum Address {
-    /// Default slave address - all pins are disconnected
+    /// Default slave address 0b1_1000 - all pins are disconnected
     Default,
-    /// Alternative slave address with configurable pins A2, A1, A0
+    /// Alternative slave address with configurable pins A2, A1, A0.
+    /// The address pins correspond to the Least Significant
+    /// bits (LSbs) of the address bits.
     Alternative { a2: bool, a1: bool, a0: bool },
 }
 

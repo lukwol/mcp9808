@@ -2,49 +2,55 @@ use crate::hal::blocking::i2c;
 use i2c_reg::*;
 use i2c_reg_derive::*;
 
-/// Configuration register (CONFIG)
+/// Read/write Configuration register (CONFIG)
 #[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
 #[address = 0b0001]
 #[size = 2]
 pub struct ConfigurationRegister;
 
-/// Alert Temperature Upper Boundary Trip register (T_UPPER)
+/// Read/write Alert Temperature Upper Boundary Trip register (T_UPPER)
 #[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
 #[address = 0b0010]
 #[size = 2]
 pub struct UpperTemperatureRegister;
 
-/// Alert Temperature Lower Boundary Trip register (T_LOWER)
+/// Read/write Alert Temperature Lower Boundary Trip register (T_LOWER)
 #[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
 #[address = 0b0011]
 #[size = 2]
 pub struct LowerTemperatureRegister;
 
-/// Critical Temperature Trip register (T_CRTI)
+/// Read/write Critical Temperature Trip register (T_CRTI)
 #[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
 #[address = 0b0100]
 #[size = 2]
 pub struct CriticalTemperatureRegister;
 
-/// Ambient temperature register (T_A)
+/// Read only Ambient temperature register (T_A)
 #[derive(Debug, Register, I2cReadRegister)]
 #[address = 0b0101]
 #[size = 2]
 pub struct AmbientTemperatureRegister;
 
-/// Manufacturer ID register
+/// Read only Manufacturer ID register.
+/// This register is used to identify the manufacturer of the
+/// device in order to perform manufacturer-specific
+/// operation.
 #[derive(Debug, Register, I2cReadRegister)]
 #[address = 0b0110]
 #[size = 2]
 pub struct ManufacturerIdRegister;
 
-/// Device ID/Revision register
+/// Read only Device ID/Revision register.
+/// The upper byte of this register is used to specify the
+/// device identification and the lower byte is used to
+/// specify the device revision.
 #[derive(Debug, Register, I2cReadRegister)]
 #[address = 0b0111]
 #[size = 2]
 pub struct DeviceIdRevisionRegister;
 
-/// Temperature resolution register
+/// Read/Write Temperature resolution register
 #[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
 #[address = 0b1000]
 #[size = 1]

@@ -12,8 +12,7 @@ type Raw = <ManufacturerIdRegister as Register>::Raw;
 pub struct ManufacturerId(pub u16);
 
 impl ManufacturerId {
-
-    /// The Manufacturer ID for the MCP9808 is 0x0054 (hexadecimal).
+    /// The Manufacturer ID for the MCP9808 is 0x0054 (hexadecimal)
     pub fn is_valid(self) -> bool {
         self.0 == VALID_MANUFACTURER_ID
     }
@@ -27,7 +26,6 @@ impl From<Raw> for ManufacturerId {
 }
 
 impl<I2C> MCP9808<I2C> {
-
     /// Read `ManufacturerId` from `ManufacturerIdRegister`
     pub fn read_manufacturer_id<Err>(&mut self) -> Result<ManufacturerId, Err>
     where
