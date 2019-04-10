@@ -8,10 +8,14 @@ type Raw = <DeviceIdRevisionRegister as Register>::Raw;
 #[derive(Debug, PartialEq, PartialOrd, Copy, Clone)]
 pub struct DeviceId(pub u8);
 
+/// The revision begins with 0x00 (hex) for the first release,
+/// with the number being incremented as revised versions are released.
 #[derive(Debug, PartialEq, PartialOrd, Copy, Clone)]
 pub struct DeviceRevision(pub u8);
 
 impl DeviceId {
+
+    /// The Device ID for the MCP9808 is 0x04 (hex).
     pub fn is_valid(self) -> bool {
         self.0 == VALID_DEVICE_ID
     }

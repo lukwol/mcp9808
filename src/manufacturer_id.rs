@@ -7,13 +7,13 @@ type Raw = <ManufacturerIdRegister as Register>::Raw;
 
 /// `ManufacturerId` is used to identify the manufacturer of the
 /// device in order to perform manufacturer-specific
-/// operation
+/// operation.
 #[derive(Debug, PartialEq, PartialOrd, Copy, Clone)]
 pub struct ManufacturerId(pub u16);
 
 impl ManufacturerId {
 
-    /// The Manufacturer ID for the MCP9808 is 0x0054 (hexadecimal)
+    /// The Manufacturer ID for the MCP9808 is 0x0054 (hexadecimal).
     pub fn is_valid(self) -> bool {
         self.0 == VALID_MANUFACTURER_ID
     }
