@@ -23,6 +23,33 @@
 //! ## User-Programmable Temperature Limits:
 //! * Temperature Window Limit
 //! * Critical Temperature Limit
+//!
+//! # Example
+//!
+//! ```
+//! use embedded_hal::blocking::i2c;
+//! use mcp9808::{
+//!     temperature::{Celsius, TemperatureMeasurement},
+//!     SlaveAddress, MCP9808,
+//! };
+//!
+//! # struct MockI2c;
+//! #
+//! # impl i2c::WriteRead for MockI2c {
+//! #     type Error = ();
+//! #     fn write_read(&mut self, address: u8, bytes: &[u8], buffer: &mut [u8]) -> Result<(), Self::Error> {
+//! #         buffer[0] = 0b0000_11110;
+//! #         buffer[1] = 0b0111_1111;
+//! #         Ok(())
+//! #     }
+//! # }
+//! #
+//! # let i2c = MockI2c;
+//! #
+//! let mut mcp9808 = MCP9808::new(i2c, SlaveAddress::Default);
+//! let measurement: TemperatureMeasurement<Celsius> = mcp9808.read_ambient_temperature().unwrap();
+//! assert_eq!(Celsius(-24.063), measurement.temperature);
+//! ```
 
 #![no_std]
 
