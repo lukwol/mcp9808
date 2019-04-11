@@ -11,7 +11,8 @@ use mcp9808::{
 };
 
 let mut mcp9808 = MCP9808::new(i2c, SlaveAddress::Default);
-let temperature: TemperatureMeasurement<Celsius> = mcp9808.read_ambient_temperature().unwrap();
+let measurement: TemperatureMeasurement<Celsius> = mcp9808.read_ambient_temperature().unwrap();
+assert_eq!(Celsius(-24.063), measurement.temperature);
 ```
 
 ## License
