@@ -1,21 +1,21 @@
 #[cfg(test)]
 mod address {
-    use mcp9808::address::Address;
+    use mcp9808::address::SlaveAddress;
 
     #[test]
     fn default_address() {
-        assert_eq!(0b1_1000u8, Address::Default.into());
+        assert_eq!(0b1_1000u8, SlaveAddress::Default.into());
     }
 
     #[cfg(test)]
     mod alternative_address {
-        use mcp9808::address::Address;
+        use mcp9808::address::SlaveAddress;
 
         #[test]
         fn no_pins_enabled() {
             assert_eq!(
-                Address::Default,
-                Address::Alternative {
+                SlaveAddress::Default,
+                SlaveAddress::Alternative {
                     a2: false,
                     a1: false,
                     a0: false
@@ -27,7 +27,7 @@ mod address {
         fn configured_with_pins() {
             assert_eq!(
                 0b1_1001u8,
-                Address::Alternative {
+                SlaveAddress::Alternative {
                     a2: false,
                     a1: false,
                     a0: true
@@ -36,7 +36,7 @@ mod address {
             );
             assert_eq!(
                 0b1_1010u8,
-                Address::Alternative {
+                SlaveAddress::Alternative {
                     a2: false,
                     a1: true,
                     a0: false
@@ -45,7 +45,7 @@ mod address {
             );
             assert_eq!(
                 0b1_1100u8,
-                Address::Alternative {
+                SlaveAddress::Alternative {
                     a2: true,
                     a1: false,
                     a0: false
@@ -54,7 +54,7 @@ mod address {
             );
             assert_eq!(
                 0b1_1101u8,
-                Address::Alternative {
+                SlaveAddress::Alternative {
                     a2: true,
                     a1: false,
                     a0: true
@@ -63,7 +63,7 @@ mod address {
             );
             assert_eq!(
                 0b1_1110u8,
-                Address::Alternative {
+                SlaveAddress::Alternative {
                     a2: true,
                     a1: true,
                     a0: false
@@ -72,7 +72,7 @@ mod address {
             );
             assert_eq!(
                 0b1_1111u8,
-                Address::Alternative {
+                SlaveAddress::Alternative {
                     a2: true,
                     a1: true,
                     a0: true
