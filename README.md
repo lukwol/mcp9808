@@ -1,6 +1,30 @@
 # mcp9808
   Rust generic driver for MCP9808 temperature sensor.
 
+## Features
+
+* User-Programmable Temperature Alert Output
+* Operating Voltage Range: 2.7V to 5.5V
+* OperatingCurrent: 200μA (typical)
+* ShutdownCurrent: 0.1μA (typical)
+* 2-wire Interface: I2C™/SMBus Compatible
+* Available Packages: 2x3DFN-8, MSOP-8
+
+### Accuracy:
+* ±0.25 (typical) from -40°C to +125°C
+* ±0.5°C (maximum) from -20°C to 100°C
+* ±1°C (maximum) from -40°C to +125°C
+
+### User-Selectable Measurement Resolution:
+* +0.5°C
+* +0.25°C
+* +0.125°C
+* +0.0625°C
+
+### User-Programmable Temperature Limits:
+* Temperature Window Limit
+* Critical Temperature Limit
+
 ## Example
 
 ```rust
