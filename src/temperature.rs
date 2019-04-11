@@ -118,8 +118,8 @@ where
     }
 }
 
-/// Read `TemperatureMeasurement` with Temperature `Unit` from `AmbientTemperatureRegister`
 impl<I2C> MCP9808<I2C> {
+    /// Read `TemperatureMeasurement` with Temperature `Unit` from `AmbientTemperatureRegister`
     pub fn read_ambient_temperature<Unit, Err>(
         &mut self,
     ) -> Result<TemperatureMeasurement<Unit>, Err>
@@ -131,8 +131,8 @@ impl<I2C> MCP9808<I2C> {
     }
 }
 
-/// Read Temperature `Unit` from `UpperTemperatureRegister`
 impl<I2C> MCP9808<I2C> {
+    /// Read Temperature `Unit` from `UpperTemperatureRegister`
     pub fn read_upper_temperature<Unit, Err>(&mut self) -> Result<Unit, Err>
     where
         I2C: i2c::WriteRead<Error = Err>,
@@ -142,8 +142,8 @@ impl<I2C> MCP9808<I2C> {
     }
 }
 
-/// Write Temperature `Unit` to `UpperTemperatureRegister`
 impl<I2C> MCP9808<I2C> {
+    /// Write Temperature `Unit` to `UpperTemperatureRegister`
     pub fn write_upper_temperature<Unit, Err>(&mut self, temperature: Unit) -> Result<(), Err>
     where
         I2C: i2c::Write<Error = Err>,
@@ -154,8 +154,8 @@ impl<I2C> MCP9808<I2C> {
     }
 }
 
-/// Read Temperature `Unit` from `LowerTemperatureRegister`
 impl<I2C> MCP9808<I2C> {
+    /// Read Temperature `Unit` from `LowerTemperatureRegister`
     pub fn read_lower_temperature<Unit, Err>(&mut self) -> Result<Unit, Err>
     where
         I2C: i2c::WriteRead<Error = Err>,
@@ -165,8 +165,8 @@ impl<I2C> MCP9808<I2C> {
     }
 }
 
-/// Write Temperature `Unit` to `LowerTemperatureRegister`
 impl<I2C> MCP9808<I2C> {
+    /// Write Temperature `Unit` to `LowerTemperatureRegister`
     pub fn write_lower_temperature<Unit, Err>(&mut self, temperature: Unit) -> Result<(), Err>
     where
         I2C: i2c::Write<Error = Err>,
@@ -177,8 +177,8 @@ impl<I2C> MCP9808<I2C> {
     }
 }
 
-/// Read Temperature `Unit` from `CriticalTemperatureRegister`
 impl<I2C> MCP9808<I2C> {
+    /// Read Temperature `Unit` from `CriticalTemperatureRegister`
     pub fn read_critical_temperature<Unit, Err>(&mut self) -> Result<Unit, Err>
     where
         I2C: i2c::WriteRead<Error = Err>,
@@ -189,8 +189,8 @@ impl<I2C> MCP9808<I2C> {
     }
 }
 
-/// Write Temperature `Unit` to `CriticalTemperatureRegister`
 impl<I2C> MCP9808<I2C> {
+    /// Write Temperature `Unit` to `CriticalTemperatureRegister`
     pub fn write_critical_temperature<Unit, Err>(&mut self) -> Result<Unit, Err>
     where
         I2C: i2c::WriteRead<Error = Err>,
