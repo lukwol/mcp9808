@@ -1,3 +1,4 @@
+// Clippy warns about `FromPrimitive`, which is not useless
 #![allow(clippy::useless_attribute)]
 
 use crate::{hal::blocking::i2c, ResolutionRegister, MCP9808};
