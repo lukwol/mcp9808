@@ -1,3 +1,5 @@
+//! Device ID and Revision
+
 use crate::{hal::blocking::i2c, DeviceIdRevisionRegister, MCP9808};
 use i2c_reg::Register;
 

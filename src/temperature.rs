@@ -1,3 +1,5 @@
+//! Ambient, Critical, Upper, Lower Temperature
+
 use crate::{
     hal::blocking::i2c, AmbientTemperatureRegister, CriticalTemperatureRegister,
     LowerTemperatureRegister, UpperTemperatureRegister, MCP9808,

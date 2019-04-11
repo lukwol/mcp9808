@@ -27,19 +27,19 @@
 #![no_std]
 
 use crate::registers::*;
-use address::SlaveAddress;
 use embedded_hal as hal;
 use i2c_reg::I2cInterface;
+pub use address::SlaveAddress;
 
-pub mod address;
+mod address;
 pub mod configuration;
 pub mod device_id_revision;
 pub mod manufacturer_id;
 pub mod resolution;
 pub mod temperature;
-
 mod registers;
 
+/// Maximum Accuracy Digital Temperature Sensor
 pub struct MCP9808<I2C> {
     /// I2C interface
     i2c_interface: I2cInterface<I2C>,

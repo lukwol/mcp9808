@@ -1,3 +1,5 @@
+//! Device Registers
+
 use crate::hal::blocking::i2c;
 use i2c_reg::*;
 use i2c_reg_derive::*;
@@ -53,6 +55,9 @@ pub struct ManufacturerIdRegister;
 pub struct DeviceIdRevisionRegister;
 
 /// Read/Write Temperature resolution register
+/// This register allows the user to change the sensor resolution.
+/// The POR default resolution is +0.0625°C.
+/// The selected resolution is also reflected in the Capability register.
 #[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
 #[address = 0b1000]
 #[size = 1]

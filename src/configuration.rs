@@ -1,3 +1,5 @@
+//! Device Configuration
+
 // Clippy warns about `FromPrimitive`, which is not useless
 #![allow(clippy::useless_attribute)]
 
@@ -127,6 +129,7 @@ pub enum AlertOutputMode {
     Interrupt = 1,
 }
 
+/// Device configuration
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Configuration {
     /// T_HYST: T_UPPER and T_LOWER Limit Hysteresis bits
@@ -179,7 +182,6 @@ impl Default for Configuration {
 }
 
 impl From<Raw> for Configuration {
-    /// Convert `Configuration` to bytes
     fn from(raw: Raw) -> Self {
         let (msb, lsb) = (raw[0], raw[1]);
         Configuration {
@@ -198,7 +200,6 @@ impl From<Raw> for Configuration {
 }
 
 impl Into<Raw> for Configuration {
-    /// Convert raw bytes to `Configuration`
     fn into(self) -> Raw {
         let (mut msb, mut lsb) = (0, 0);
         msb += self.hysteresis as u8 + self.shutdown_mode as u8;
@@ -223,7 +224,7 @@ impl<I2C> MCP9808<I2C> {
         self.i2c_interface.read_register(ConfigurationRegister)
     }
 
-    /// Write `Configuration` from `ConfigurationRegister`
+    /// Write `Configuration` to `ConfigurationRegister`
     pub fn write_configuration<Err>(&mut self, configuration: Configuration) -> Result<(), Err>
     where
         I2C: i2c::Write<Error = Err>,

@@ -1,3 +1,5 @@
+//! Manufacturer ID
+
 use crate::{hal::blocking::i2c, ManufacturerIdRegister, MCP9808};
 use i2c_reg::Register;
 
