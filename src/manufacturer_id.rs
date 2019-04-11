@@ -5,7 +5,7 @@ const VALID_MANUFACTURER_ID: u16 = 0x0054;
 
 type Raw = <ManufacturerIdRegister as Register>::Raw;
 
-/// `ManufacturerId` is used to identify the manufacturer of the
+/// Manufacturer ID is used to identify the manufacturer of the
 /// device in order to perform manufacturer-specific
 /// operation.
 #[derive(Debug, PartialEq, PartialOrd, Copy, Clone)]

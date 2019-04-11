@@ -3,6 +3,8 @@ use i2c_reg::*;
 use i2c_reg_derive::*;
 
 /// Read/write Configuration register (CONFIG)
+/// The MCP9808 has a 16-bit Configuration register (CONFIG) that allows the user
+/// to set various functions for a robust temperature monitoring system.
 #[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
 #[address = 0b0001]
 #[size = 2]
