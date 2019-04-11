@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod address {
-    use mcp9808::address::SlaveAddress;
+    use mcp9808::SlaveAddress;
 
     #[test]
     fn default_address() {
@@ -9,7 +9,7 @@ mod address {
 
     #[cfg(test)]
     mod alternative_address {
-        use mcp9808::address::SlaveAddress;
+        use mcp9808::SlaveAddress;
 
         #[test]
         fn no_pins_enabled() {

@@ -13,18 +13,21 @@ use i2c_reg_derive::*;
 pub struct ConfigurationRegister;
 
 /// Read/write Alert Temperature Upper Boundary Trip register (T_UPPER)
+/// Power-Up Default for T_UPPER is 0°C
 #[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
 #[address = 0b0010]
 #[size = 2]
 pub struct UpperTemperatureRegister;
 
 /// Read/write Alert Temperature Lower Boundary Trip register (T_LOWER)
+/// /// Power-Up Default for T_LOWER is 0°C
 #[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
 #[address = 0b0011]
 #[size = 2]
 pub struct LowerTemperatureRegister;
 
-/// Read/write Critical Temperature Trip register (T_CRTI)
+/// Read/write Critical Temperature Trip register (T_CRIT)
+/// /// /// Power-Up Default for T_CRIT is 0°C
 #[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
 #[address = 0b0100]
 #[size = 2]

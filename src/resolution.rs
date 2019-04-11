@@ -14,7 +14,6 @@ type Raw = <ResolutionRegister as Register>::Raw;
 /// Used to adjust Temperature Sensor Accuracy and Temperature Conversion Time
 #[derive(Debug, PartialEq, Clone, Copy, FromPrimitive)]
 pub enum Resolution {
-
     /// +0.5°C (t_CONV = 30 ms typical)
     Deg0_5C = 0b00,
 
@@ -41,7 +40,6 @@ impl Into<Raw> for Resolution {
 }
 
 impl<I2C> MCP9808<I2C> {
-
     /// Read `Resolution` from `ResolutionRegister`
     pub fn read_resolution<Err>(&mut self) -> Result<Resolution, Err>
     where

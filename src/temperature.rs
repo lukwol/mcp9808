@@ -13,6 +13,7 @@ const TEMPERATURE_SIGN_BIT: u8 = 1 << 4;
 
 type Raw = <AmbientTemperatureRegister as Register>::Raw;
 
+/// Temperature value in Millicelsius
 #[derive(Debug, PartialOrd, PartialEq, Copy, Clone)]
 pub struct Millicelsius(pub i32);
 
@@ -49,6 +50,7 @@ impl Into<Raw> for Millicelsius {
     }
 }
 
+/// Temperature value in Celsius
 #[derive(Debug, PartialOrd, PartialEq, Copy, Clone)]
 pub struct Celsius(pub f32);
 
@@ -76,19 +78,28 @@ impl Into<Raw> for Celsius {
     }
 }
 
+/// Describes Temperature Unit value
 pub trait TemperatureUnit {}
 
 impl TemperatureUnit for Millicelsius {}
 impl TemperatureUnit for Celsius {}
 
+/// Ambient temperature measurement with additional information
 #[derive(Debug, PartialOrd, PartialEq, Copy, Clone)]
 pub struct TemperatureMeasurement<Unit>
 where
     Unit: TemperatureUnit,
 {
+    /// Temperature in Celsius or Millicelsius
     pub temperature: Unit,
+
+    /// T_A is greater or equal than T_CRIT
     pub is_critical: bool,
+
+    /// T_A is greater than T_UPPER
     pub is_upper: bool,
+
+    /// T_A is lower than T_LOWER
     pub is_lower: bool,
 }
 
@@ -107,48 +118,85 @@ where
     }
 }
 
-macro_rules! impl_read_temperature_register {
-    ($register: expr, $function_name: ident) => {
-        impl_read_temperature_register!($register, $function_name, Unit);
-    };
-    ($register: expr, $function_name: ident, $type: ty) => {
-        impl<I2C> MCP9808<I2C> {
-            pub fn $function_name<Unit, Err>(&mut self) -> Result<$type, Err>
-            where
-                I2C: i2c::WriteRead<Error = Err>,
-                Unit: From<Raw> + TemperatureUnit,
-            {
-                self.i2c_interface.read_register($register)
-            }
-        }
-    };
+/// Read `TemperatureMeasurement` with Temperature `Unit` from `AmbientTemperatureRegister`
+impl<I2C> MCP9808<I2C> {
+    pub fn read_ambient_temperature<Unit, Err>(
+        &mut self,
+    ) -> Result<TemperatureMeasurement<Unit>, Err>
+    where
+        I2C: i2c::WriteRead<Error = Err>,
+        Unit: From<Raw> + TemperatureUnit,
+    {
+        self.i2c_interface.read_register(AmbientTemperatureRegister)
+    }
 }
 
-macro_rules! impl_write_temperature_register {
-    ($register: expr, $function_name: ident) => {
-        impl<I2C> MCP9808<I2C> {
-            pub fn $function_name<Unit, Err>(&mut self, temperature: Unit) -> Result<(), Err>
-            where
-                I2C: i2c::Write<Error = Err>,
-                Unit: Into<Raw> + TemperatureUnit,
-            {
-                self.i2c_interface.write_register($register, temperature)
-            }
-        }
-    };
+/// Read Temperature `Unit` from `UpperTemperatureRegister`
+impl<I2C> MCP9808<I2C> {
+    pub fn read_upper_temperature<Unit, Err>(&mut self) -> Result<Unit, Err>
+    where
+        I2C: i2c::WriteRead<Error = Err>,
+        Unit: From<Raw> + TemperatureUnit,
+    {
+        self.i2c_interface.read_register(UpperTemperatureRegister)
+    }
 }
 
-impl_read_temperature_register!(
-    AmbientTemperatureRegister,
-    read_ambient_temperature,
-    TemperatureMeasurement<Unit>
-);
+/// Write Temperature `Unit` to `UpperTemperatureRegister`
+impl<I2C> MCP9808<I2C> {
+    pub fn write_upper_temperature<Unit, Err>(&mut self, temperature: Unit) -> Result<(), Err>
+    where
+        I2C: i2c::Write<Error = Err>,
+        Unit: Into<Raw> + TemperatureUnit,
+    {
+        self.i2c_interface
+            .write_register(UpperTemperatureRegister, temperature)
+    }
+}
 
-impl_read_temperature_register!(UpperTemperatureRegister, read_upper_temperature);
-impl_write_temperature_register!(UpperTemperatureRegister, write_upper_temperature);
+/// Read Temperature `Unit` from `LowerTemperatureRegister`
+impl<I2C> MCP9808<I2C> {
+    pub fn read_lower_temperature<Unit, Err>(&mut self) -> Result<Unit, Err>
+    where
+        I2C: i2c::WriteRead<Error = Err>,
+        Unit: From<Raw> + TemperatureUnit,
+    {
+        self.i2c_interface.read_register(LowerTemperatureRegister)
+    }
+}
 
-impl_read_temperature_register!(LowerTemperatureRegister, read_lower_temperature);
-impl_write_temperature_register!(LowerTemperatureRegister, write_lower_temperature);
+/// Write Temperature `Unit` to `LowerTemperatureRegister`
+impl<I2C> MCP9808<I2C> {
+    pub fn write_lower_temperature<Unit, Err>(&mut self, temperature: Unit) -> Result<(), Err>
+    where
+        I2C: i2c::Write<Error = Err>,
+        Unit: Into<Raw> + TemperatureUnit,
+    {
+        self.i2c_interface
+            .write_register(LowerTemperatureRegister, temperature)
+    }
+}
 
-impl_read_temperature_register!(CriticalTemperatureRegister, read_critical_temperature);
-impl_write_temperature_register!(CriticalTemperatureRegister, write_critical_temperature);
+/// Read Temperature `Unit` from `CriticalTemperatureRegister`
+impl<I2C> MCP9808<I2C> {
+    pub fn read_critical_temperature<Unit, Err>(&mut self) -> Result<Unit, Err>
+    where
+        I2C: i2c::WriteRead<Error = Err>,
+        Unit: From<Raw> + TemperatureUnit,
+    {
+        self.i2c_interface
+            .read_register(CriticalTemperatureRegister)
+    }
+}
+
+/// Write Temperature `Unit` to `CriticalTemperatureRegister`
+impl<I2C> MCP9808<I2C> {
+    pub fn write_critical_temperature<Unit, Err>(&mut self) -> Result<Unit, Err>
+    where
+        I2C: i2c::WriteRead<Error = Err>,
+        Unit: From<Raw> + TemperatureUnit,
+    {
+        self.i2c_interface
+            .read_register(CriticalTemperatureRegister)
+    }
+}
