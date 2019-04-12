@@ -22,8 +22,7 @@ impl ManufacturerId {
 
 impl From<Raw> for ManufacturerId {
     fn from(raw: Raw) -> Self {
-        let (msb, lsb) = (raw[0], raw[1]);
-        ManufacturerId(((u16::from(msb)) << 8) + u16::from(lsb))
+        ManufacturerId(u16::from_be_bytes(raw))
     }
 }
 
