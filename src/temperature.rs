@@ -191,12 +191,12 @@ impl<I2C> MCP9808<I2C> {
 
 impl<I2C> MCP9808<I2C> {
     /// Write Temperature `Unit` to `CriticalTemperatureRegister`
-    pub fn write_critical_temperature<Unit, Err>(&mut self) -> Result<Unit, Err>
+    pub fn write_critical_temperature<Unit, Err>(&mut self, temperature: Unit) -> Result<(), Err>
     where
-        I2C: i2c::WriteRead<Error = Err>,
-        Unit: From<Raw> + TemperatureUnit,
+        I2C: i2c::Write<Error = Err>,
+        Unit: Into<Raw> + TemperatureUnit,
     {
         self.i2c_interface
-            .read_register(CriticalTemperatureRegister)
+            .write_register(CriticalTemperatureRegister, temperature)
     }
 }
