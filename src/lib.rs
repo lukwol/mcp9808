@@ -66,6 +66,9 @@ mod registers;
 pub mod resolution;
 pub mod temperature;
 
+pub mod interface;
+mod new_registers;
+
 /// Maximum Accuracy Digital Temperature Sensor
 pub struct MCP9808<I2C> {
     /// I2C interface
