@@ -1,5 +1,4 @@
-use crate::hal::blocking::i2c;
-use crate::new_registers::Register;
+use crate::{hal::blocking::i2c, registers::Register};
 use core::{mem, ops::Add};
 use generic_array::{typenum::bit::B1, typenum::operator_aliases::Add1, ArrayLength, GenericArray};
 
