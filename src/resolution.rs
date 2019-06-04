@@ -3,12 +3,14 @@
 // Clippy warns about `FromPrimitive`, which is not useless
 #![allow(clippy::useless_attribute)]
 
-use crate::{hal::blocking::i2c, ResolutionRegister, MCP9808};
-use i2c_reg::Register;
+use crate::{hal::blocking::i2c, MCP9808};
+use generic_array::{typenum::consts::U1, GenericArray};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
-type Raw = <ResolutionRegister as Register>::Raw;
+use crate::registers::Register;
+
+type Raw = GenericArray<u8, U1>;
 
 /// Device temperature resolution
 /// Used to adjust Temperature Sensor Accuracy and Temperature Conversion Time
@@ -35,7 +37,7 @@ impl From<Raw> for Resolution {
 
 impl Into<Raw> for Resolution {
     fn into(self) -> Raw {
-        [self as u8]
+        [self as u8].into()
     }
 }
 
@@ -45,7 +47,9 @@ impl<I2C> MCP9808<I2C> {
     where
         I2C: i2c::WriteRead<Error = Err>,
     {
-        self.i2c_interface.read_register(ResolutionRegister)
+        self.i2c_interface
+            .read_register(Register::ResolutionRegister)
+            .map(Resolution::from)
     }
 
     /// Write `Resolution` to `ResolutionRegister`
@@ -54,6 +58,6 @@ impl<I2C> MCP9808<I2C> {
         I2C: i2c::Write<Error = Err>,
     {
         self.i2c_interface
-            .write_register(ResolutionRegister, resolution)
+            .write_register(Register::ResolutionRegister, resolution.into())
     }
 }

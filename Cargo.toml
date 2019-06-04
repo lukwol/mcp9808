@@ -11,4 +11,4 @@ repository = "https://github.com/lukwol/mcp9808"
 embedded-hal = "0.2.2"
 num-traits = { version = "0.2", default-features = false }
 num-derive = "0.2"
-i2c-reg = "0.1"
+generic-array = "0.13.0"

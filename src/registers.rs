@@ -1,67 +1,40 @@
-//! Device Registers
+/// MCP9808 Registers
+pub enum Register {
+    /// Read/write Configuration register (CONFIG)
+    /// The MCP9808 has a 16-bit Configuration register (CONFIG) that allows the user
+    /// to set various functions for a robust temperature monitoring system.
+    ConfigurationRegister = 0b0001,
 
-use crate::hal::blocking::i2c;
-use i2c_reg::*;
-use i2c_reg_derive::*;
+    /// Read/write Alert Temperature Upper Boundary Trip register (T_UPPER)
+    /// Power-Up Default for T_UPPER is 0°C
+    UpperTemperatureRegister = 0b0010,
 
-/// Read/write Configuration register (CONFIG)
-/// The MCP9808 has a 16-bit Configuration register (CONFIG) that allows the user
-/// to set various functions for a robust temperature monitoring system.
-#[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
-#[address = 0b0001]
-#[size = 2]
-pub struct ConfigurationRegister;
+    /// Read/write Alert Temperature Lower Boundary Trip register (T_LOWER)
+    /// /// Power-Up Default for T_LOWER is 0°C
+    LowerTemperatureRegister = 0b0011,
 
-/// Read/write Alert Temperature Upper Boundary Trip register (T_UPPER)
-/// Power-Up Default for T_UPPER is 0°C
-#[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
-#[address = 0b0010]
-#[size = 2]
-pub struct UpperTemperatureRegister;
+    /// Read/write Critical Temperature Trip register (T_CRIT)
+    /// /// /// Power-Up Default for T_CRIT is 0°C
+    CriticalTemperatureRegister = 0b0100,
 
-/// Read/write Alert Temperature Lower Boundary Trip register (T_LOWER)
-/// /// Power-Up Default for T_LOWER is 0°C
-#[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
-#[address = 0b0011]
-#[size = 2]
-pub struct LowerTemperatureRegister;
+    /// Read only Ambient temperature register (T_A)
+    AmbientTemperatureRegister = 0b0101,
 
-/// Read/write Critical Temperature Trip register (T_CRIT)
-/// /// /// Power-Up Default for T_CRIT is 0°C
-#[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
-#[address = 0b0100]
-#[size = 2]
-pub struct CriticalTemperatureRegister;
+    /// Read only Manufacturer ID register.
+    /// This register is used to identify the manufacturer of the
+    /// device in order to perform manufacturer-specific
+    /// operation.
+    ManufacturerIdRegister = 0b0110,
 
-/// Read only Ambient temperature register (T_A)
-#[derive(Debug, Register, I2cReadRegister)]
-#[address = 0b0101]
-#[size = 2]
-pub struct AmbientTemperatureRegister;
+    /// Read only Device ID/Revision register.
+    /// The upper byte of this register is used to specify the
+    /// device identification and the lower byte is used to
+    /// specify the device revision.
+    DeviceIdRevisionRegister = 0b0111,
 
-/// Read only Manufacturer ID register.
-/// This register is used to identify the manufacturer of the
-/// device in order to perform manufacturer-specific
-/// operation.
-#[derive(Debug, Register, I2cReadRegister)]
-#[address = 0b0110]
-#[size = 2]
-pub struct ManufacturerIdRegister;
-
-/// Read only Device ID/Revision register.
-/// The upper byte of this register is used to specify the
-/// device identification and the lower byte is used to
-/// specify the device revision.
-#[derive(Debug, Register, I2cReadRegister)]
-#[address = 0b0111]
-#[size = 2]
-pub struct DeviceIdRevisionRegister;
-
-/// Read/Write Temperature resolution register
-/// This register allows the user to change the sensor resolution.
-/// The POR default resolution is +0.0625°C.
-/// The selected resolution is also reflected in the Capability register.
-#[derive(Debug, Register, I2cReadRegister, I2cWriteRegister)]
-#[address = 0b1000]
-#[size = 1]
-pub struct ResolutionRegister;
+    /// Read/Write Temperature resolution register
+    /// This register allows the user to change the sensor resolution.
+    /// The POR default resolution is +0.0625°C.
+    /// The selected resolution is also reflected in the Capability register.
+    ResolutionRegister = 0b1000,
+}

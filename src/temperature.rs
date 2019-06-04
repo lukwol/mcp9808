@@ -1,17 +1,14 @@
 //! Ambient, Critical, Upper, Lower Temperature
 
-use crate::{
-    hal::blocking::i2c, AmbientTemperatureRegister, CriticalTemperatureRegister,
-    LowerTemperatureRegister, UpperTemperatureRegister, MCP9808,
-};
-use i2c_reg::Register;
+use crate::{hal::blocking::i2c, registers::Register, MCP9808};
+use generic_array::{typenum::consts::U2, GenericArray};
 
 const ALERT_CRITICAL_BIT: u8 = 1 << 7;
 const ALERT_UPPER_BIT: u8 = 1 << 6;
 const ALERT_LOWER_BIT: u8 = 1 << 5;
 const TEMPERATURE_SIGN_BIT: u8 = 1 << 4;
 
-type Raw = <AmbientTemperatureRegister as Register>::Raw;
+type Raw = GenericArray<u8, U2>;
 
 /// Temperature value in Millicelsius
 #[derive(Debug, PartialOrd, PartialEq, Copy, Clone)]
@@ -46,7 +43,7 @@ impl Into<Raw> for Millicelsius {
             msb |= TEMPERATURE_SIGN_BIT;
         }
         let lsb = (((integer & 0b1111) << 4) + fraction / 62) as u8;
-        [msb, lsb]
+        [msb, lsb].into()
     }
 }
 
@@ -127,7 +124,9 @@ impl<I2C> MCP9808<I2C> {
         I2C: i2c::WriteRead<Error = Err>,
         Unit: From<Raw> + TemperatureUnit,
     {
-        self.i2c_interface.read_register(AmbientTemperatureRegister)
+        self.i2c_interface
+            .read_register(Register::AmbientTemperatureRegister)
+            .map(TemperatureMeasurement::<Unit>::from)
     }
 }
 
@@ -138,7 +137,9 @@ impl<I2C> MCP9808<I2C> {
         I2C: i2c::WriteRead<Error = Err>,
         Unit: From<Raw> + TemperatureUnit,
     {
-        self.i2c_interface.read_register(UpperTemperatureRegister)
+        self.i2c_interface
+            .read_register(Register::UpperTemperatureRegister)
+            .map(Unit::from)
     }
 }
 
@@ -150,7 +151,7 @@ impl<I2C> MCP9808<I2C> {
         Unit: Into<Raw> + TemperatureUnit,
     {
         self.i2c_interface
-            .write_register(UpperTemperatureRegister, temperature)
+            .write_register(Register::UpperTemperatureRegister, temperature.into())
     }
 }
 
@@ -161,7 +162,9 @@ impl<I2C> MCP9808<I2C> {
         I2C: i2c::WriteRead<Error = Err>,
         Unit: From<Raw> + TemperatureUnit,
     {
-        self.i2c_interface.read_register(LowerTemperatureRegister)
+        self.i2c_interface
+            .read_register(Register::LowerTemperatureRegister)
+            .map(Unit::from)
     }
 }
 
@@ -173,7 +176,7 @@ impl<I2C> MCP9808<I2C> {
         Unit: Into<Raw> + TemperatureUnit,
     {
         self.i2c_interface
-            .write_register(LowerTemperatureRegister, temperature)
+            .write_register(Register::LowerTemperatureRegister, temperature.into())
     }
 }
 
@@ -185,7 +188,8 @@ impl<I2C> MCP9808<I2C> {
         Unit: From<Raw> + TemperatureUnit,
     {
         self.i2c_interface
-            .read_register(CriticalTemperatureRegister)
+            .read_register(Register::CriticalTemperatureRegister)
+            .map(Unit::from)
     }
 }
 
@@ -197,6 +201,6 @@ impl<I2C> MCP9808<I2C> {
         Unit: Into<Raw> + TemperatureUnit,
     {
         self.i2c_interface
-            .write_register(CriticalTemperatureRegister, temperature)
+            .write_register(Register::CriticalTemperatureRegister, temperature.into())
     }
 }

@@ -1,11 +1,11 @@
 //! Device ID and Revision
 
-use crate::{hal::blocking::i2c, DeviceIdRevisionRegister, MCP9808};
-use i2c_reg::Register;
+use crate::{hal::blocking::i2c, registers::Register, MCP9808};
+use generic_array::{typenum::consts::U2, GenericArray};
 
 const VALID_DEVICE_ID: u8 = 0x04;
 
-type Raw = <DeviceIdRevisionRegister as Register>::Raw;
+type Raw = GenericArray<u8, U2>;
 
 /// Bit 15 to bit 8 are used for `DeviceId`.
 #[derive(Debug, PartialEq, PartialOrd, Copy, Clone)]
@@ -31,7 +31,7 @@ impl<I2C> MCP9808<I2C> {
         I2C: i2c::WriteRead<Error = Err>,
     {
         self.i2c_interface
-            .read_register(DeviceIdRevisionRegister)
+            .read_register(Register::DeviceIdRevisionRegister)
             .map(|raw: Raw| (DeviceId(raw[0]), DeviceRevision(raw[1])))
     }
 }

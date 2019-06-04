@@ -3,12 +3,12 @@
 // Clippy warns about `FromPrimitive`, which is not useless
 #![allow(clippy::useless_attribute)]
 
-use crate::{hal::blocking::i2c, ConfigurationRegister, MCP9808};
-use i2c_reg::Register;
+use crate::{hal::blocking::i2c, registers::Register, MCP9808};
+use generic_array::{typenum::consts::U2, GenericArray};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
-type Raw = <ConfigurationRegister as Register>::Raw;
+type Raw = GenericArray<u8, U2>;
 
 /// T_HYST: T_UPPER and T_LOWER Limit Hysteresis bits
 /// This bit can not be altered when either of the Lock bits are set (bit 6 and bit 7).
@@ -211,7 +211,7 @@ impl Into<Raw> for Configuration {
             + self.alert_output_select as u8
             + self.alert_output_polarity as u8
             + self.alert_output_mode as u8;
-        [msb, lsb]
+        [msb, lsb].into()
     }
 }
 
@@ -221,7 +221,9 @@ impl<I2C> MCP9808<I2C> {
     where
         I2C: i2c::WriteRead<Error = Err>,
     {
-        self.i2c_interface.read_register(ConfigurationRegister)
+        self.i2c_interface
+            .read_register(Register::ConfigurationRegister)
+            .map(Configuration::from)
     }
 
     /// Write `Configuration` to `ConfigurationRegister`
@@ -230,6 +232,6 @@ impl<I2C> MCP9808<I2C> {
         I2C: i2c::Write<Error = Err>,
     {
         self.i2c_interface
-            .write_register(ConfigurationRegister, configuration)
+            .write_register(Register::ConfigurationRegister, configuration.into())
     }
 }

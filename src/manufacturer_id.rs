@@ -1,11 +1,11 @@
 //! Manufacturer ID
 
-use crate::{hal::blocking::i2c, ManufacturerIdRegister, MCP9808};
-use i2c_reg::Register;
+use crate::{hal::blocking::i2c, registers::Register, MCP9808};
+use generic_array::{typenum::consts::U2, GenericArray};
 
 const VALID_MANUFACTURER_ID: u16 = 0x0054;
 
-type Raw = <ManufacturerIdRegister as Register>::Raw;
+type Raw = GenericArray<u8, U2>;
 
 /// Manufacturer ID is used to identify the manufacturer of the
 /// device in order to perform manufacturer-specific
@@ -22,6 +22,7 @@ impl ManufacturerId {
 
 impl From<Raw> for ManufacturerId {
     fn from(raw: Raw) -> Self {
+        let raw = [raw[0], raw[1]];
         ManufacturerId(u16::from_be_bytes(raw))
     }
 }
@@ -32,6 +33,8 @@ impl<I2C> MCP9808<I2C> {
     where
         I2C: i2c::WriteRead<Error = Err>,
     {
-        self.i2c_interface.read_register(ManufacturerIdRegister)
+        self.i2c_interface
+            .read_register(Register::ManufacturerIdRegister)
+            .map(ManufacturerId::from)
     }
 }
