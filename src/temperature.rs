@@ -128,9 +128,7 @@ impl<I2C> MCP9808<I2C> {
             .read_register(Register::AmbientTemperatureRegister)
             .map(TemperatureMeasurement::<Unit>::from)
     }
-}
 
-impl<I2C> MCP9808<I2C> {
     /// Read Temperature `Unit` from `UpperTemperatureRegister`
     pub fn read_upper_temperature<Unit, Err>(&mut self) -> Result<Unit, Err>
     where
@@ -141,9 +139,7 @@ impl<I2C> MCP9808<I2C> {
             .read_register(Register::UpperTemperatureRegister)
             .map(Unit::from)
     }
-}
 
-impl<I2C> MCP9808<I2C> {
     /// Write Temperature `Unit` to `UpperTemperatureRegister`
     pub fn write_upper_temperature<Unit, Err>(&mut self, temperature: Unit) -> Result<(), Err>
     where
@@ -153,9 +149,7 @@ impl<I2C> MCP9808<I2C> {
         self.i2c_interface
             .write_register(Register::UpperTemperatureRegister, temperature.into())
     }
-}
 
-impl<I2C> MCP9808<I2C> {
     /// Read Temperature `Unit` from `LowerTemperatureRegister`
     pub fn read_lower_temperature<Unit, Err>(&mut self) -> Result<Unit, Err>
     where
@@ -166,9 +160,7 @@ impl<I2C> MCP9808<I2C> {
             .read_register(Register::LowerTemperatureRegister)
             .map(Unit::from)
     }
-}
 
-impl<I2C> MCP9808<I2C> {
     /// Write Temperature `Unit` to `LowerTemperatureRegister`
     pub fn write_lower_temperature<Unit, Err>(&mut self, temperature: Unit) -> Result<(), Err>
     where
@@ -178,9 +170,7 @@ impl<I2C> MCP9808<I2C> {
         self.i2c_interface
             .write_register(Register::LowerTemperatureRegister, temperature.into())
     }
-}
 
-impl<I2C> MCP9808<I2C> {
     /// Read Temperature `Unit` from `CriticalTemperatureRegister`
     pub fn read_critical_temperature<Unit, Err>(&mut self) -> Result<Unit, Err>
     where
@@ -191,9 +181,7 @@ impl<I2C> MCP9808<I2C> {
             .read_register(Register::CriticalTemperatureRegister)
             .map(Unit::from)
     }
-}
 
-impl<I2C> MCP9808<I2C> {
     /// Write Temperature `Unit` to `CriticalTemperatureRegister`
     pub fn write_critical_temperature<Unit, Err>(&mut self, temperature: Unit) -> Result<(), Err>
     where
