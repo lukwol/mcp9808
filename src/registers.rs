@@ -38,3 +38,9 @@ pub enum Register {
     /// The selected resolution is also reflected in the Capability register.
     ResolutionRegister = 0b1000,
 }
+
+impl Into<u8> for Register {
+    fn into(self) -> u8 {
+        self as u8
+    }
+}

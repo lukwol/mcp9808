@@ -12,3 +12,4 @@ embedded-hal = "0.2.2"
 num-traits = { version = "0.2", default-features = false }
 num-derive = "0.2"
 generic-array = "0.13.0"
+i2c-interface = { git = "https://github.com/lukwol/i2c-interface", version = "0.1.0" }

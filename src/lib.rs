@@ -55,7 +55,7 @@
 
 pub use address::SlaveAddress;
 use embedded_hal as hal;
-use interface::I2cInterface;
+use i2c_interface::I2cInterface;
 
 mod address;
 pub mod configuration;
@@ -64,7 +64,6 @@ pub mod manufacturer_id;
 pub mod resolution;
 pub mod temperature;
 
-mod interface;
 mod registers;
 
 /// Maximum Accuracy Digital Temperature Sensor
