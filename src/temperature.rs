@@ -126,7 +126,7 @@ impl<I2C> MCP9808<I2C> {
     {
         self.i2c_interface
             .read_register(Register::AmbientTemperatureRegister)
-            .map(TemperatureMeasurement::<Unit>::from)
+            .map(TemperatureMeasurement::from)
     }
 
     /// Read Temperature `Unit` from `UpperTemperatureRegister`
