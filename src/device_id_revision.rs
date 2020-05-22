@@ -1,7 +1,7 @@
 //! Device ID and Revision
 
 use crate::{hal::blocking::i2c, registers::Register, MCP9808};
-use generic_array::{typenum::consts::U2, GenericArray};
+use i2c_interface::generic_array::{typenum::consts::U2, GenericArray};
 
 const VALID_DEVICE_ID: u8 = 0x04;
 

@@ -4,7 +4,7 @@
 #![allow(clippy::useless_attribute)]
 
 use crate::{hal::blocking::i2c, MCP9808};
-use generic_array::{typenum::consts::U1, GenericArray};
+use i2c_interface::generic_array::{typenum::consts::U1, GenericArray};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 

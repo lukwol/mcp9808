@@ -13,7 +13,7 @@ mod temperature {
 
         mod temperature_to_raw {
             use super::{Celsius, Millicelsius};
-            use generic_array::arr;
+            use i2c_interface::generic_array::arr;
 
             #[test]
             fn zero_millicelsius() {
@@ -110,7 +110,7 @@ mod temperature {
 
         mod raw_to_temperature {
             use super::{Celsius, Millicelsius};
-            use generic_array::arr;
+            use i2c_interface::generic_array::arr;
 
             #[test]
             fn zero_millicelsius() {
